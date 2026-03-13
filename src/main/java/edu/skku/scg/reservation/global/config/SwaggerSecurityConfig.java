@@ -18,7 +18,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@Order(1)
 @Profile("dev")
 public class SwaggerSecurityConfig {
 
@@ -33,6 +32,7 @@ public class SwaggerSecurityConfig {
     }
 
     @Bean
+    @Order(1)
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/api/v1/swagger-ui/**", "/api/v1/v3/api-docs/**", "/api/v1/swagger-ui.html")
