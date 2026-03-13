@@ -110,7 +110,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Update shortener-api image to ${{ env.dockerimage_tag }}"
+          git commit -m "Update reservation-be-dev image to ${{ env.dockerimage_tag }}"
           git push origin main
 
       - name: --------------- Clean Up ---------------
