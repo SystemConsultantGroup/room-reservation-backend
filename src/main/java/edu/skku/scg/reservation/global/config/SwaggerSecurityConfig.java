@@ -34,25 +34,22 @@ public class SwaggerSecurityConfig {
     @Bean
     @Order(1)
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
+        UserDetails admin = User.builder()
+                .username(swaggerId)
+                .password("{noop}" + swaggerPassword)
+                .roles("ADMIN")
+                .build();
+        UserDetailsService inMemoryUserDetailsService = new InMemoryUserDetailsManager(admin);
+
         http
                 .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults())
+                .userDetailsService(inMemoryUserDetailsService)
                 .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails admin = User.builder()
-                .username(swaggerId)
-                .password("{noop}" + swaggerPassword)
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(admin);
     }
 }
