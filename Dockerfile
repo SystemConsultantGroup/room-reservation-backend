@@ -5,4 +5,4 @@ WORKDIR /home/app
 COPY ${JAR_FILE} /home/app/app.jar
 EXPOSE 8000
 ENV SPRING_PROFILES_ACTIVE=dev
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "/home/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/home/app/app.jar"]
