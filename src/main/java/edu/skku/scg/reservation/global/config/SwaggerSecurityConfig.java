@@ -35,7 +35,7 @@ public class SwaggerSecurityConfig {
     @Order(1)
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/v1/swagger-ui/**", "/api/v1/v3/api-docs/**", "/api/v1/swagger-ui.html")
+                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
