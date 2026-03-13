@@ -9,3 +9,8 @@ springdoc:
     disable-swagger-default-url: true
   api-docs:
     path: /api/v1/v3/api-docs
+
+swagger:
+  user:
+    id: ${SWAGGER_ID}
+    password: ${SWAGGER_PASSWORD}
