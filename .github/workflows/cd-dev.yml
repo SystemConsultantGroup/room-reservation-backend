@@ -46,8 +46,8 @@ jobs:
           tags: |
             ${{ env.dockerimage_tag }}
             latest
-          flavor: |
-            latest=true
+
+
 
       - name: Docker 준비(2/4) - QEMU 설정
         uses: docker/setup-qemu-action@v3
