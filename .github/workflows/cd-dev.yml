@@ -35,7 +35,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Gradle build
-        run: ./gradlew build -x test
+        run: ./gradlew build
 
       - name: Docker 준비(1/4) - 메타데이터 생성
         id: meta
@@ -99,8 +99,8 @@ jobs:
       - name: Config Repo 변경사항 푸시
         run: |
           cd reservation-config
-          git config user.email "qazxsw100415@gmail.com"
-          git config user.name "snghyn28"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
 
           git add -A
 
@@ -110,7 +110,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Update shortener-api image to ${{ env.dockerimage_tag }}"
+          git commit -m "Update reservation-be-dev image to ${{ env.dockerimage_tag }}"
           git push origin main
 
       - name: --------------- Clean Up ---------------
