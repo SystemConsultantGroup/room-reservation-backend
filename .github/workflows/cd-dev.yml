@@ -35,7 +35,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Gradle build
-        run: ./gradlew build -x test
+        run: ./gradlew build
 
       - name: Docker 준비(1/4) - 메타데이터 생성
         id: meta
