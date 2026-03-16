@@ -34,7 +34,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 e.getMessage()
         );
 
-        return ResponseEntity.status(statusCode).body(errorResponse);
+        return new ResponseEntity<>(errorResponse, headers, statusCode);
     }
 
     @ExceptionHandler(Exception.class)
