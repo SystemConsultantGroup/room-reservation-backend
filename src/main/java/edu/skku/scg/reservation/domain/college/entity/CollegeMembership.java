@@ -24,8 +24,4 @@ public class CollegeMembership {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "college_id", nullable = false)
     private College college;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MembershipStatus status = MembershipStatus.PENDING;
 }
