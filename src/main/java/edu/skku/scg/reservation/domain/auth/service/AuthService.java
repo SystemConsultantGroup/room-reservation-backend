@@ -29,7 +29,6 @@ public class AuthService {
     private final CollegeAdminRepository collegeAdminRepository;
     private final CollegeMembershipRepository collegeMembershipRepository;
     private final JwtProvider jwtProvider;
-    private final String googleClientId;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
     public AuthService(
@@ -42,7 +41,6 @@ public class AuthService {
         this.collegeAdminRepository = collegeAdminRepository;
         this.collegeMembershipRepository = collegeMembershipRepository;
         this.jwtProvider = jwtProvider;
-        this.googleClientId = googleClientId;
         this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(), new GsonFactory())
                 .setAudience(List.of(googleClientId))
