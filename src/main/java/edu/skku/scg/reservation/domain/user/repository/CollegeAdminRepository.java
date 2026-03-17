@@ -1,7 +1,6 @@
 package edu.skku.scg.reservation.domain.user.repository;
 
 import edu.skku.scg.reservation.domain.user.entity.CollegeAdmin;
-import edu.skku.scg.reservation.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
