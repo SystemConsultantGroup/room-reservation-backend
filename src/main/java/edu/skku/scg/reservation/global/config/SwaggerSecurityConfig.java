@@ -18,7 +18,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@Profile("dev")
 public class SwaggerSecurityConfig {
 
     private final String swaggerId;
@@ -32,8 +31,9 @@ public class SwaggerSecurityConfig {
     }
 
     @Bean
+    @Profile("dev")
     @Order(1)
-    public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain swaggerDevFilterChain(HttpSecurity http) throws Exception {
         UserDetails admin = User.builder()
                 .username(swaggerId)
                 .password("{noop}" + swaggerPassword)
@@ -42,7 +42,7 @@ public class SwaggerSecurityConfig {
         UserDetailsService inMemoryUserDetailsService = new InMemoryUserDetailsManager(admin);
 
         http
-                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**")
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
@@ -50,6 +50,17 @@ public class SwaggerSecurityConfig {
                 .userDetailsService(inMemoryUserDetailsService)
                 .csrf(AbstractHttpConfigurer::disable);
 
+        return http.build();
+    }
+
+    @Bean
+    @Profile("local")
+    @Order(1)
+    public SecurityFilterChain swaggerLocalFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**")
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
 }

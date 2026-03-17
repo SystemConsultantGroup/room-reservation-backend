@@ -67,40 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = parseCookieToken(request);
 
         try {
-            if (StringUtils.hasText(token)) {
-                if (!jwtProvider.validateToken(token)) {
-                    throw new BusinessException(ErrorCode.INVALID_TOKEN);
-                }
-
-                String userId = jwtProvider.getUserIdFromToken(token);
-                User user = userRepository.findByIdWithMembershipsAndAdmins(Long.parseLong(userId))
-                        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-                UserRole role = user.getRole();
-                List<Long> approvedCids = user.getCollegeMemberships().stream()
-                        .map(cm -> cm.getCollege().getId())
-                        .collect(Collectors.toList());
-                List<Long> adminCids = role == UserRole.COLLEGE_ADMIN
-                        ? user.getCollegeAdmins().stream()
-                        .map(ca -> ca.getCollege().getId())
-                        .collect(Collectors.toList())
-                        : Collections.emptyList();
-                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
-
-                if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
-                    updateCookie(response, token, role, approvedCids, adminCids);
-                }
-
-                UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
-
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-        } catch (BusinessException e) {
+            authenticateUser(request, response, token);
+        } catch (Exception e) {
             SecurityContextHolder.clearContext();
             exceptionResolver.resolveException(request, response, null, e);
             return;
@@ -114,14 +82,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return (cookie != null) ? cookie.getValue() : null;
     }
 
+    private void authenticateUser(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, String token) {
+        if (StringUtils.hasText(token)) {
+            if (!jwtProvider.validateToken(token)) {
+                throw new BusinessException(ErrorCode.INVALID_TOKEN);
+            }
+
+            String userId = jwtProvider.getUserIdFromToken(token);
+            User user = userRepository.findByIdWithMembershipsAndAdmins(Long.parseLong(userId))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+            UserRole role = user.getRole();
+            List<Long> approvedCids = user.getCollegeMemberships().stream()
+                    .map(cm -> cm.getCollege().getId())
+                    .collect(Collectors.toList());
+            List<Long> adminCids = role == UserRole.COLLEGE_ADMIN
+                    ? user.getCollegeAdmins().stream()
+                    .map(ca -> ca.getCollege().getId())
+                    .collect(Collectors.toList())
+                    : Collections.emptyList();
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
+
+            if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
+                updateCookie(response, token, role, approvedCids, adminCids);
+            }
+
+            UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
+
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+    }
+
     private boolean isPrivilegeChanged(String token, String dbRole, List<Long> dbApprovedCids, List<Long> dbAdminCids) {
         String tokenRole = jwtProvider.getRoleFromToken(token);
         List<Long> tokenApprovedCids = jwtProvider.getApprovedCidsFromToken(token);
         List<Long> tokenAdminCids = jwtProvider.getAdminCidsFromToken(token);
 
         if (!dbRole.equals(tokenRole)) return true;
-        if (!isListEqualIgnoreOrder(dbApprovedCids, tokenApprovedCids)) return true;
-        if (!isListEqualIgnoreOrder(dbAdminCids, tokenAdminCids)) return true;
+        if (isListDifferentIgnoreOrder(dbApprovedCids, tokenApprovedCids)) return true;
+        if (isListDifferentIgnoreOrder(dbAdminCids, tokenAdminCids)) return true;
 
         return false;
     }
@@ -143,12 +147,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    private boolean isListEqualIgnoreOrder(List<Long> list1, List<Long> list2) {
+    private boolean isListDifferentIgnoreOrder(List<Long> list1, List<Long> list2) {
         if (list1 == null) list1 = List.of();
         if (list2 == null) list2 = List.of();
 
-        if (list1.size() != list2.size()) return false;
+        if (list1.size() != list2.size()) return true;
 
-        return new java.util.HashSet<>(list1).containsAll(list2);
+        return !new java.util.HashSet<>(list1).containsAll(list2);
     }
 }

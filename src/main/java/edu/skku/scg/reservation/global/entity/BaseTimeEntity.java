@@ -1,4 +1,4 @@
-package edu.skku.scg.reservation.global.common;
+package edu.skku.scg.reservation.global.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
