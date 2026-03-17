@@ -6,8 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -32,10 +32,10 @@ public class User extends BaseTimeEntity {
     private UserRole role = UserRole.USER;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<CollegeMembership> collegeMemberships = new ArrayList<>();
+    private final Set<CollegeMembership> collegeMemberships = new HashSet<>();
 
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<CollegeAdmin> collegeAdmins = new ArrayList<>();
+    private final Set<CollegeAdmin> collegeAdmins = new HashSet<>();
 
     public User(String email, String name, String studentId, String googleId) {
         this.email = email;
