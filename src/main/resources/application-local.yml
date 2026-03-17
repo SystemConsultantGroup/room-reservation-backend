@@ -13,3 +13,6 @@ logging:
   level:
     org.springframework: DEBUG
     org.hibernate.orm.jdbc.bind: DEBUG
+
+cookie:
+  secure: false

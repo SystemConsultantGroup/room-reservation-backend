@@ -17,3 +17,6 @@ swagger:
   user:
     id: ${SWAGGER_ID}
     password: ${SWAGGER_PASSWORD}
+
+cookie:
+  secure: true

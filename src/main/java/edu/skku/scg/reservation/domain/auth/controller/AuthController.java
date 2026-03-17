@@ -19,10 +19,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final long jwtExpiration;
+    private final boolean cookieSecure;
 
-    AuthController(AuthService authService, @Value("${jwt.expiration}") long jwtExpiration) {
+    AuthController(
+            AuthService authService,
+            @Value("${jwt.expiration}") long jwtExpiration,
+            @Value("${cookie.secure}") boolean cookieSecure) {
+
         this.authService = authService;
         this.jwtExpiration = jwtExpiration;
+        this.cookieSecure = cookieSecure;
     }
 
     @PostMapping("/google")
@@ -45,7 +51,7 @@ public class AuthController {
     private void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtExpiration))
                 .sameSite("Lax")
@@ -57,7 +63,7 @@ public class AuthController {
     private void clearAccessTokenCookie(HttpServletResponse response) {
         ResponseCookie clearCookie = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")
