@@ -5,7 +5,6 @@ import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserRole;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
-import edu.skku.scg.reservation.global.annotation.PublicApi;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
@@ -27,9 +26,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
