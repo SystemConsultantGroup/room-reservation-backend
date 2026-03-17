@@ -1,7 +1,7 @@
 package edu.skku.scg.reservation.domain.user.entity;
 
 import edu.skku.scg.reservation.domain.college.entity.College;
-import edu.skku.scg.reservation.global.common.BaseTimeEntity;
+import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
