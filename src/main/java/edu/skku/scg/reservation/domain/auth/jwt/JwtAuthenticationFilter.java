@@ -1,13 +1,20 @@
 package edu.skku.scg.reservation.domain.auth.jwt;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
+import edu.skku.scg.reservation.domain.user.entity.User;
+import edu.skku.scg.reservation.domain.user.entity.UserRole;
+import edu.skku.scg.reservation.domain.user.repository.UserRepository;
+import edu.skku.scg.reservation.global.exception.BusinessException;
+import edu.skku.scg.reservation.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,14 +27,27 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final boolean cookieSecure;
+
+    JwtAuthenticationFilter(
+            JwtProvider jwtProvider,
+            UserRepository userRepository,
+            @Value("${cookie.secure}") boolean cookieSecure) {
+        this.jwtProvider = jwtProvider;
+        this.userRepository = userRepository;
+        this.cookieSecure = cookieSecure;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -38,13 +58,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = parseCookieToken(request);
 
-        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
-            String userId = jwtProvider.getUserIdFromToken(token);
-            String role = jwtProvider.getRoleFromToken(token);
-            List<Long> approvedCids = jwtProvider.getApprovedCidsFromToken(token);
-            List<Long> adminCids = jwtProvider.getAdminCidsFromToken(token);
+        if (StringUtils.hasText(token)) {
+            if (!jwtProvider.validateToken(token)) {
+                throw new BusinessException(ErrorCode.INVALID_TOKEN);
+            }
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+            String userId = jwtProvider.getUserIdFromToken(token);
+            User user = userRepository.findByIdWithMembershipsAndAdmins(Long.parseLong(userId))
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+            UserRole role = user.getRole();
+            List<Long> approvedCids = user.getCollegeMemberships().stream()
+                    .map(cm -> cm.getCollege().getId())
+                    .collect(Collectors.toList());
+            List<Long> adminCids = user.getCollegeAdmins().stream()
+                    .map(ca -> ca.getCollege().getId())
+                    .collect(Collectors.toList());
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
+
+            if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
+                Date expiration = jwtProvider.getExpirationFromToken(token);
+                long remainingMillis = expiration.getTime() - System.currentTimeMillis();
+
+                ResponseCookie cookie = ResponseCookie.from(
+                                "accessToken",
+                                jwtProvider.updateToken(token, role, approvedCids, adminCids))
+                        .httpOnly(true)
+                        .secure(cookieSecure)
+                        .path("/")
+                        .maxAge(Duration.ofMillis(remainingMillis))
+                        .sameSite("Lax")
+                        .build();
+
+                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            }
 
             UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
 
@@ -62,5 +109,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String parseCookieToken(HttpServletRequest request) {
         Cookie cookie = WebUtils.getCookie(request, "accessToken");
         return (cookie != null) ? cookie.getValue() : null;
+    }
+
+    private boolean isPrivilegeChanged(String token, String role, List<Long> dbApprovedCids, List<Long> dbAdminCids) {
+        String tokenRole = jwtProvider.getRoleFromToken(token);
+        List<Long> tokenApprovedCids = jwtProvider.getApprovedCidsFromToken(token);
+        List<Long> tokenAdminCids = jwtProvider.getAdminCidsFromToken(token);
+
+        if (!role.equals(tokenRole)) return true;
+        if (!isListEqualIgnoreOrder(dbApprovedCids, tokenApprovedCids)) return true;
+        if (!isListEqualIgnoreOrder(dbAdminCids, tokenAdminCids)) return true;
+
+        return false;
+    }
+
+    private boolean isListEqualIgnoreOrder(List<Long> list1, List<Long> list2) {
+        if (list1 == null) list1 = List.of();
+        if (list2 == null) list2 = List.of();
+
+        if (list1.size() != list2.size()) return false;
+
+        return new java.util.HashSet<>(list1).containsAll(list2);
     }
 }

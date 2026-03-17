@@ -46,6 +46,22 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String updateToken(
+            String token,
+            UserRole role,
+            List<Long> approvedCids,
+            List<Long> adminCids) {
+        return Jwts.builder()
+                .subject(getUserIdFromToken(token))
+                .claim("role", role)
+                .claim("approvedCids", approvedCids)
+                .claim("adminCids", adminCids)
+                .issuedAt(new Date())
+                .expiration(getExpirationFromToken(token))
+                .signWith(key)
+                .compact();
+    }
+
     public String getUserIdFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(key)
