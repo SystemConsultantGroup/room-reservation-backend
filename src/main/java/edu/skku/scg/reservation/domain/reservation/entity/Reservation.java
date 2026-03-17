@@ -1,6 +1,7 @@
 package edu.skku.scg.reservation.domain.reservation.entity;
 
 import edu.skku.scg.reservation.domain.user.entity.User;
+import edu.skku.scg.reservation.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Reservation {
+public class Reservation extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
