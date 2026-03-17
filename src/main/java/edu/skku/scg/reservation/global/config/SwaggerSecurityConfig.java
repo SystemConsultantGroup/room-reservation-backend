@@ -42,7 +42,7 @@ public class SwaggerSecurityConfig {
         UserDetailsService inMemoryUserDetailsService = new InMemoryUserDetailsManager(admin);
 
         http
-                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                .securityMatcher("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/api-docs/**")
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().authenticated()
                 )
