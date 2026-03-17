@@ -4,9 +4,7 @@ import edu.skku.scg.reservation.domain.auth.jwt.JwtAuthenticationFilter;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -73,12 +71,8 @@ public class CommonSecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            exceptionResolver.resolveException(request, response, null, new BusinessException(ErrorCode.UNAUTHENTICATED));
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            exceptionResolver.resolveException(request, response, null, new BusinessException(ErrorCode.ACCESS_DENIED));
-                        })
+                        .authenticationEntryPoint((request, response, authException) -> exceptionResolver.resolveException(request, response, null, new BusinessException(ErrorCode.UNAUTHENTICATED)))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> exceptionResolver.resolveException(request, response, null, new BusinessException(ErrorCode.ACCESS_DENIED)))
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
