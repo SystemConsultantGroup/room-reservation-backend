@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.auth.controller;
 
+import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
 import edu.skku.scg.reservation.domain.auth.dto.AuthResponseDto;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginRequestDto;
 import edu.skku.scg.reservation.domain.auth.dto.LoginResult;
@@ -49,7 +50,7 @@ public class AuthController {
     }
 
     private void setAccessTokenCookie(HttpServletResponse response, String accessToken) {
-        ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
+        ResponseCookie cookie = ResponseCookie.from(AuthConstants.ACCESS_TOKEN_COOKIE_NAME, accessToken)
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
@@ -61,7 +62,7 @@ public class AuthController {
     }
 
     private void clearAccessTokenCookie(HttpServletResponse response) {
-        ResponseCookie clearCookie = ResponseCookie.from("accessToken", "")
+        ResponseCookie clearCookie = ResponseCookie.from(AuthConstants.ACCESS_TOKEN_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")

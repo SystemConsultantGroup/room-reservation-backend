@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.auth.jwt;
 
+import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserRole;
@@ -104,7 +105,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String parseCookieToken(HttpServletRequest request) {
-        Cookie cookie = WebUtils.getCookie(request, "accessToken");
+        Cookie cookie = WebUtils.getCookie(request, AuthConstants.ACCESS_TOKEN_COOKIE_NAME);
         return (cookie != null) ? cookie.getValue() : null;
     }
 
@@ -125,7 +126,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         long remainingMillis = expiration.getTime() - System.currentTimeMillis();
 
         ResponseCookie cookie = ResponseCookie.from(
-                        "accessToken",
+                        AuthConstants.ACCESS_TOKEN_COOKIE_NAME,
                         jwtProvider.updateToken(token, role, approvedCids, adminCids))
                 .httpOnly(true)
                 .secure(cookieSecure)
