@@ -30,6 +30,7 @@ public class AuthService {
     private final CollegeMembershipRepository collegeMembershipRepository;
     private final JwtProvider jwtProvider;
     private final String googleClientId;
+    private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
     public AuthService(
             UserRepository userRepository,
@@ -42,6 +43,10 @@ public class AuthService {
         this.collegeMembershipRepository = collegeMembershipRepository;
         this.jwtProvider = jwtProvider;
         this.googleClientId = googleClientId;
+        this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(), new GsonFactory())
+                .setAudience(List.of(googleClientId))
+                .build();
     }
 
     @Transactional
@@ -52,12 +57,7 @@ public class AuthService {
         String name;
 
         try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), new GsonFactory())
-                    .setAudience(List.of(googleClientId))
-                    .build();
-
-            GoogleIdToken idToken = verifier.verify(credential);
+            GoogleIdToken idToken = googleIdTokenVerifier.verify(credential);
             if (idToken == null) {
                 throw new IllegalArgumentException("유효하지 않은 구글 토큰입니다.");
             }
