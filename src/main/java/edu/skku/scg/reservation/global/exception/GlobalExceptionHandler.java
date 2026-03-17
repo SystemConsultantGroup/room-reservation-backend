@@ -16,7 +16,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
-        log.warn("Business Exception", e);
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.from(e.getErrorCode()));
@@ -35,6 +34,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         return new ResponseEntity<>(errorResponse, headers, statusCode);
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    protected ResponseEntity<ErrorResponse> handleAccessDeniedException(org.springframework.security.access.AccessDeniedException e) {
+        return ResponseEntity
+                .status(ErrorCode.ACCESS_DENIED.getStatus())
+                .body(ErrorResponse.from(ErrorCode.ACCESS_DENIED));
     }
 
     @ExceptionHandler(Exception.class)
