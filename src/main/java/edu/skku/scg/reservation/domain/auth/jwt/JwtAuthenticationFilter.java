@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,6 +25,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
@@ -39,14 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
     private final boolean cookieSecure;
+    private final HandlerExceptionResolver exceptionResolver;
 
     JwtAuthenticationFilter(
             JwtProvider jwtProvider,
             UserRepository userRepository,
-            @Value("${cookie.secure}") boolean cookieSecure) {
+            @Value("${cookie.secure}") boolean cookieSecure,
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver
+    ) {
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
         this.cookieSecure = cookieSecure;
+        this.exceptionResolver = exceptionResolver;
     }
 
     @Override
@@ -58,49 +64,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = parseCookieToken(request);
 
-        if (StringUtils.hasText(token)) {
-            if (!jwtProvider.validateToken(token)) {
-                throw new BusinessException(ErrorCode.INVALID_TOKEN);
+        try {
+            if (StringUtils.hasText(token)) {
+                if (!jwtProvider.validateToken(token)) {
+                    throw new BusinessException(ErrorCode.INVALID_TOKEN);
+                }
+
+                String userId = jwtProvider.getUserIdFromToken(token);
+                User user = userRepository.findByIdWithMembershipsAndAdmins(Long.parseLong(userId))
+                        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+                UserRole role = user.getRole();
+                List<Long> approvedCids = user.getCollegeMemberships().stream()
+                        .map(cm -> cm.getCollege().getId())
+                        .collect(Collectors.toList());
+                List<Long> adminCids = user.getCollegeAdmins().stream()
+                        .map(ca -> ca.getCollege().getId())
+                        .collect(Collectors.toList());
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
+
+                if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
+                    Date expiration = jwtProvider.getExpirationFromToken(token);
+                    long remainingMillis = expiration.getTime() - System.currentTimeMillis();
+
+                    ResponseCookie cookie = ResponseCookie.from(
+                                    "accessToken",
+                                    jwtProvider.updateToken(token, role, approvedCids, adminCids))
+                            .httpOnly(true)
+                            .secure(cookieSecure)
+                            .path("/")
+                            .maxAge(Duration.ofMillis(remainingMillis))
+                            .sameSite("Lax")
+                            .build();
+
+                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                }
+
+                UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(principal, null, authorities);
+
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
-            String userId = jwtProvider.getUserIdFromToken(token);
-            User user = userRepository.findByIdWithMembershipsAndAdmins(Long.parseLong(userId))
-                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-            UserRole role = user.getRole();
-            List<Long> approvedCids = user.getCollegeMemberships().stream()
-                    .map(cm -> cm.getCollege().getId())
-                    .collect(Collectors.toList());
-            List<Long> adminCids = user.getCollegeAdmins().stream()
-                    .map(ca -> ca.getCollege().getId())
-                    .collect(Collectors.toList());
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
-
-            if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
-                Date expiration = jwtProvider.getExpirationFromToken(token);
-                long remainingMillis = expiration.getTime() - System.currentTimeMillis();
-
-                ResponseCookie cookie = ResponseCookie.from(
-                                "accessToken",
-                                jwtProvider.updateToken(token, role, approvedCids, adminCids))
-                        .httpOnly(true)
-                        .secure(cookieSecure)
-                        .path("/")
-                        .maxAge(Duration.ofMillis(remainingMillis))
-                        .sameSite("Lax")
-                        .build();
-
-                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            }
-
-            UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(principal, null, authorities);
-
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (BusinessException e) {
+            exceptionResolver.resolveException(request, response, null, e);
         }
 
         filterChain.doFilter(request, response);
@@ -111,12 +121,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return (cookie != null) ? cookie.getValue() : null;
     }
 
-    private boolean isPrivilegeChanged(String token, String role, List<Long> dbApprovedCids, List<Long> dbAdminCids) {
+    private boolean isPrivilegeChanged(String token, String dbRole, List<Long> dbApprovedCids, List<Long> dbAdminCids) {
         String tokenRole = jwtProvider.getRoleFromToken(token);
         List<Long> tokenApprovedCids = jwtProvider.getApprovedCidsFromToken(token);
         List<Long> tokenAdminCids = jwtProvider.getAdminCidsFromToken(token);
 
-        if (!role.equals(tokenRole)) return true;
+        if (!dbRole.equals(tokenRole)) return true;
         if (!isListEqualIgnoreOrder(dbApprovedCids, tokenApprovedCids)) return true;
         if (!isListEqualIgnoreOrder(dbAdminCids, tokenAdminCids)) return true;
 
