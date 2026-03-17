@@ -54,6 +54,7 @@ public class AuthController {
     }
 
     @Operation(summary = "로그아웃", description = "액세스 토큰 쿠키를 만료시킵니다.")
+    @PublicApi
     @PostMapping("/logout")
     public void logout(HttpServletResponse response) {
         clearAccessTokenCookie(response);
