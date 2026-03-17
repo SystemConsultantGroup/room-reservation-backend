@@ -20,6 +20,7 @@ public class AuthChecker {
     }
 
     public boolean isSuperAdmin(UserPrincipal principal) {
+        if (principal == null) return false;
         return principal.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("SUPER_ADMIN"));
     }
