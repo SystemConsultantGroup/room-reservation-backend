@@ -11,6 +11,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -45,7 +47,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(jwtExpiration)
+                .maxAge(Duration.ofMillis(jwtExpiration))
                 .sameSite("Lax")
                 .build();
 
