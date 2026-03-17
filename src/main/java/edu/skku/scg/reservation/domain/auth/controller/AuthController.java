@@ -5,6 +5,7 @@ import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginRequestDto;
 import edu.skku.scg.reservation.domain.auth.dto.LoginResult;
 import edu.skku.scg.reservation.domain.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,7 +25,7 @@ public class AuthController {
 
     @PostMapping("/google")
     public AuthResponseDto googleLogin(
-            @RequestBody GoogleLoginRequestDto request,
+            @Valid @RequestBody GoogleLoginRequestDto request,
             HttpServletResponse response) {
 
         LoginResult loginResult = authService.verifyGoogleTokenAndLogin(request.credential(), request.studentId());
