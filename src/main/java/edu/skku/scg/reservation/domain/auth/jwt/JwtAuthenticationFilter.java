@@ -31,6 +31,7 @@ import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,9 +80,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List<Long> approvedCids = user.getCollegeMemberships().stream()
                         .map(cm -> cm.getCollege().getId())
                         .collect(Collectors.toList());
-                List<Long> adminCids = user.getCollegeAdmins().stream()
+                List<Long> adminCids = role == UserRole.COLLEGE_ADMIN
+                        ? user.getCollegeAdmins().stream()
                         .map(ca -> ca.getCollege().getId())
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList())
+                        : Collections.emptyList();
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
 
                 if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
