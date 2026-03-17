@@ -35,13 +35,15 @@ public class SwaggerConfig {
         Info info = new Info()
                 .title("Room Reservation API 명세서")
                 .version("v1.0.0")
-                .description("성균관대학교 공간 예약 시스템을 위한 전용 API 문서입니다.\n\n" +
-                        "각 API 제목 앞의 뱃지를 통해 필요한 권한을 확인할 수 있습니다.\n" +
-                        "* ⚪ **[Public]** : 인증 불필요\n" +
-                        "* 🔵 **[Authenticated]** : 기본 로그인 필요\n" +
-                        "* 🟢 **[Approved]** : 해당 단과대 승인 멤버\n" +
-                        "* 🟠 **[College Admin]** : 해당 단과대 관리자\n" +
-                        "* 🔴 **[Super Admin]** : 시스템 최고 관리자");
+                .description("""
+                        성균관대학교 공간 예약 시스템을 위한 전용 API 문서입니다.
+                        
+                        각 API 제목 앞의 뱃지를 통해 필요한 권한을 확인할 수 있습니다.
+                        * ⚪ **[Public]** : 로그인 불필요
+                        * 🔵 **[Authenticated]** : 로그인 필요
+                        * 🟢 **[Approved]** : 해당 단과대 승인 멤버
+                        * 🟠 **[College Admin]** : 해당 단과대 관리자
+                        * 🔴 **[Super Admin]** : 시스템 최고 관리자""");
 
         return new OpenAPI()
                 .info(info)
