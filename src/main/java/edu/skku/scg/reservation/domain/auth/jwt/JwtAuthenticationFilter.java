@@ -3,6 +3,7 @@ package edu.skku.scg.reservation.domain.auth.jwt;
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,10 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        String token = parseBearerToken(request);
+        String token = parseCookieToken(request);
 
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
-
             String userId = jwtProvider.getUserIdFromToken(token);
             String role = jwtProvider.getRoleFromToken(token);
             List<Long> approvedCids = jwtProvider.getApprovedCidsFromToken(token);
@@ -58,11 +59,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String parseBearerToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+    private String parseCookieToken(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, "accessToken");
+        return (cookie != null) ? cookie.getValue() : null;
     }
 }
