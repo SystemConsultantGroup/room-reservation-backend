@@ -1,6 +1,7 @@
-package edu.skku.scg.reservation.domain.college.entity;
+package edu.skku.scg.reservation.domain.user.entity;
 
-import edu.skku.scg.reservation.domain.user.entity.User;
+import edu.skku.scg.reservation.domain.college.entity.College;
+import edu.skku.scg.reservation.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "college_id"})
 })
-public class CollegeMembership {
+public class CollegeMembership extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
