@@ -123,7 +123,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return false;
     }
 
-    private void updateCookie(@org.jspecify.annotations.NonNull HttpServletResponse response, String token, UserRole role, List<Long> approvedCids, List<Long> adminCids) {
+    private void updateCookie(@NonNull HttpServletResponse response, String token, UserRole role, List<Long> approvedCids, List<Long> adminCids) {
         Date expiration = jwtProvider.getExpirationFromToken(token);
         long remainingMillis = expiration.getTime() - System.currentTimeMillis();
 
