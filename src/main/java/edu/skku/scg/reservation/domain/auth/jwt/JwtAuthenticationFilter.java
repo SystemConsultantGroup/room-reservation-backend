@@ -84,20 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toString()));
 
                 if (isPrivilegeChanged(token, role.toString(), approvedCids, adminCids)) {
-                    Date expiration = jwtProvider.getExpirationFromToken(token);
-                    long remainingMillis = expiration.getTime() - System.currentTimeMillis();
-
-                    ResponseCookie cookie = ResponseCookie.from(
-                                    "accessToken",
-                                    jwtProvider.updateToken(token, role, approvedCids, adminCids))
-                            .httpOnly(true)
-                            .secure(cookieSecure)
-                            .path("/")
-                            .maxAge(Duration.ofMillis(remainingMillis))
-                            .sameSite("Lax")
-                            .build();
-
-                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                    updateCookie(response, token, role, approvedCids, adminCids);
                 }
 
                 UserPrincipal principal = new UserPrincipal(userId, approvedCids, adminCids, authorities);
@@ -131,6 +118,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (!isListEqualIgnoreOrder(dbAdminCids, tokenAdminCids)) return true;
 
         return false;
+    }
+
+    private void updateCookie(@org.jspecify.annotations.NonNull HttpServletResponse response, String token, UserRole role, List<Long> approvedCids, List<Long> adminCids) {
+        Date expiration = jwtProvider.getExpirationFromToken(token);
+        long remainingMillis = expiration.getTime() - System.currentTimeMillis();
+
+        ResponseCookie cookie = ResponseCookie.from(
+                        "accessToken",
+                        jwtProvider.updateToken(token, role, approvedCids, adminCids))
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(Duration.ofMillis(remainingMillis))
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private boolean isListEqualIgnoreOrder(List<Long> list1, List<Long> list2) {
