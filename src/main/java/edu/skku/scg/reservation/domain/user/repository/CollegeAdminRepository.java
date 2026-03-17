@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface CollegeAdminRepository extends JpaRepository<CollegeAdmin, Long> {
 
-    @Query("select ca from CollegeAdmin ca join fetch ca.college where ca.admin.id = :adminId")
     List<CollegeAdmin> findAllByAdminId(Long adminId);
 }
