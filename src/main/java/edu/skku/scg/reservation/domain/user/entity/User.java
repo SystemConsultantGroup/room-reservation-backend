@@ -6,6 +6,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -27,6 +30,12 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<CollegeMembership> collegeMemberships = new ArrayList<>();
+
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<CollegeAdmin> collegeAdmins = new ArrayList<>();
 
     public User(String email, String name, String studentId, String googleId) {
         this.email = email;
