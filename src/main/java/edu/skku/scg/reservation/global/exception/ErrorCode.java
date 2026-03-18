@@ -14,7 +14,9 @@ public enum ErrorCode {
     UNAUTHENTICATED(UNAUTHORIZED, "AUTH-401", "인증되지 않았습니다."),
     ACCESS_DENIED(FORBIDDEN, "AUTH-403", "접근 권한이 없습니다."),
 
-    USER_NOT_FOUND(NOT_FOUND, "USER-001", "존재하지 않는 사용자입니다."),
+    USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
+
+    ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 방입니다."),
 
     SERVER_ERROR(INTERNAL_SERVER_ERROR, "SERVER-500", "서버 내부 오류가 발생했습니다.");
 

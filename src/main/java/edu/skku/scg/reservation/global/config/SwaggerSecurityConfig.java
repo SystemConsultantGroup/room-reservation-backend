@@ -24,8 +24,8 @@ public class SwaggerSecurityConfig {
     private final String swaggerPassword;
 
     public SwaggerSecurityConfig(
-            @Value("${swagger.user.id}") String swaggerId,
-            @Value("${swagger.user.password}") String swaggerPassword) {
+            @Value("${swagger.user.id:}") String swaggerId,
+            @Value("${swagger.user.password:}") String swaggerPassword) {
         this.swaggerId = swaggerId;
         this.swaggerPassword = swaggerPassword;
     }
