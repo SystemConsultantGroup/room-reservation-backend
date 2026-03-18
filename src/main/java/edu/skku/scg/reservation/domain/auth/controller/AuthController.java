@@ -1,9 +1,7 @@
 package edu.skku.scg.reservation.domain.auth.controller;
 
 import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
-import edu.skku.scg.reservation.domain.auth.dto.AuthResponseDto;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginRequestDto;
-import edu.skku.scg.reservation.domain.auth.dto.LoginResult;
 import edu.skku.scg.reservation.domain.auth.service.AuthService;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,15 +40,13 @@ public class AuthController {
             "최초 로그인시 회원가입을 수행합니다.")
     @PublicApi
     @PostMapping("/google")
-    public AuthResponseDto googleLogin(
-            @Valid @RequestBody GoogleLoginRequestDto request,
+    public void googleLogin(
+            @Valid @RequestBody GoogleLoginRequestDto body,
             HttpServletResponse response) {
 
-        LoginResult loginResult = authService.verifyGoogleTokenAndLogin(request.credential(), request.studentId());
+        String accessToken = authService.verifyGoogleTokenAndLogin(body.credential(), body.studentId());
 
-        setAccessTokenCookie(response, loginResult.accessToken());
-
-        return new AuthResponseDto(loginResult.userId(), loginResult.approvedCids(), loginResult.adminCids());
+        setAccessTokenCookie(response, accessToken);
     }
 
     @Operation(summary = "로그아웃", description = "액세스 토큰 쿠키를 만료시킵니다.")

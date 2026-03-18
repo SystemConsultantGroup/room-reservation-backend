@@ -4,7 +4,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import edu.skku.scg.reservation.domain.auth.dto.LoginResult;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserRole;
@@ -48,7 +47,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResult verifyGoogleTokenAndLogin(String credential, String studentId) {
+    public String verifyGoogleTokenAndLogin(String credential, String studentId) {
         GoogleIdToken.Payload payload;
         String googleId;
         String email;
@@ -72,17 +71,7 @@ public class AuthService {
         User user = userRepository.findByGoogleId(googleId)
                 .orElseGet(() -> registerNewUser(email, name, googleId, studentId));
 
-        List<Long> adminCollegeIds = getAdminCollegeIds(user);
-        List<Long> approvedCollegeIds = getApprovedCollegeIds(user);
-
-        String accessToken = jwtProvider.createToken(
-                user.getId(),
-                user.getRole(),
-                approvedCollegeIds,
-                adminCollegeIds
-        );
-
-        return new LoginResult(accessToken, user.getId(), approvedCollegeIds, adminCollegeIds);
+        return  jwtProvider.createToken(user.getId());
     }
 
     private User registerNewUser(String email, String name, String googleId, String studentId) {
