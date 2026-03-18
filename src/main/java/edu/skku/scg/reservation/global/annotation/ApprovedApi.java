@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@authChecker.isApproved(principal, #collegeId)")
+@PreAuthorize("@authChecker.isApproved(principal, #roomId)")
 public @interface ApprovedApi {
 }
