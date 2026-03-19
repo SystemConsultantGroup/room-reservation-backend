@@ -1,10 +1,8 @@
 package edu.skku.scg.reservation.global.config;
 
 import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
-import edu.skku.scg.reservation.global.annotation.ApprovedApi;
-import edu.skku.scg.reservation.global.annotation.CollegeAdminApi;
+import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
-import edu.skku.scg.reservation.global.annotation.SuperAdminApi;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -41,9 +39,7 @@ public class SwaggerConfig {
                         각 API 제목 앞의 뱃지를 통해 필요한 권한을 확인할 수 있습니다.
                         * ⚪ **[Public]** : 로그인 불필요
                         * 🔵 **[Authenticated]** : 로그인 필요
-                        * 🟢 **[Approved]** : 해당 단과대 승인 멤버
-                        * 🟠 **[College Admin]** : 해당 단과대 관리자
-                        * 🔴 **[Super Admin]** : 시스템 최고 관리자""");
+                        * 🔴 **[Admin]** : 관리자 전용""");
 
         return new OpenAPI()
                 .info(info)
@@ -56,23 +52,17 @@ public class SwaggerConfig {
         return (operation, handlerMethod) -> {
 
             boolean isPublic = handlerMethod.getMethodAnnotation(PublicApi.class) != null;
-            boolean isSuperAdmin = handlerMethod.getMethodAnnotation(SuperAdminApi.class) != null;
-            boolean isCollegeAdmin = handlerMethod.getMethodAnnotation(CollegeAdminApi.class) != null;
-            boolean isApproved = handlerMethod.getMethodAnnotation(ApprovedApi.class) != null;
+            boolean isCollegeAdmin = handlerMethod.getMethodAnnotation(AdminApi.class) != null;
 
             String prefix;
 
             if (isPublic) {
-                prefix = "⚪ [Public] ";
+                prefix = "⚪ ";
                 operation.setSecurity(Collections.emptyList());
-            } else if (isSuperAdmin) {
-                prefix = "🔴 [Super Admin] ";
             } else if (isCollegeAdmin) {
-                prefix = "🟠 [College Admin] ";
-            } else if (isApproved) {
-                prefix = "🟢 [Approved] ";
+                prefix = "🔴 ";
             } else {
-                prefix = "🔵 [Authenticated] ";
+                prefix = "🔵 ";
             }
 
             String originalSummary = operation.getSummary() != null ? operation.getSummary() : "";

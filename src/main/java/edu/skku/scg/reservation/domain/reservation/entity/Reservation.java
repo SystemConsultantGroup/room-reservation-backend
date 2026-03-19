@@ -1,9 +1,11 @@
 package edu.skku.scg.reservation.domain.reservation.entity;
 
+import edu.skku.scg.reservation.domain.room.entity.Room;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation extends BaseTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,10 +28,17 @@ public class Reservation extends BaseTimeEntity {
     @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
+    @Column(nullable = false)
     private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ReservationStatus status = ReservationStatus.PENDING;
+    private LocalDateTime endTime;
+
+    @Builder
+    public Reservation(User user, Room room, LocalDateTime startTime, LocalDateTime endTime) {
+        this.user = user;
+        this.room = room;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
 }

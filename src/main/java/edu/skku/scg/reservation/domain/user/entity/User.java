@@ -3,11 +3,9 @@ package edu.skku.scg.reservation.domain.user.entity;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -29,18 +27,14 @@ public class User extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole role = UserRole.USER;
+    private UserType type;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<CollegeMembership> collegeMemberships = new HashSet<>();
-
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<CollegeAdmin> collegeAdmins = new HashSet<>();
-
-    public User(String email, String name, String studentId, String googleId) {
+    @Builder
+    public User(String email, String name, String studentId, String googleId, UserType type) {
         this.email = email;
         this.name = name;
         this.studentId = studentId;
         this.googleId = googleId;
+        this.type = type;
     }
 }

@@ -4,11 +4,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
+import edu.skku.scg.reservation.domain.auth.dto.RegisterToken;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
 import edu.skku.scg.reservation.domain.user.entity.User;
-import edu.skku.scg.reservation.domain.user.entity.UserRole;
-import edu.skku.scg.reservation.domain.user.repository.CollegeAdminRepository;
-import edu.skku.scg.reservation.domain.user.repository.CollegeMembershipRepository;
+import edu.skku.scg.reservation.domain.user.entity.UserType;
+import edu.skku.scg.reservation.domain.user.repository.UserManagementUnitRepository;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -25,20 +25,17 @@ import java.util.List;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final CollegeAdminRepository collegeAdminRepository;
-    private final CollegeMembershipRepository collegeMembershipRepository;
+    private final UserManagementUnitRepository userManagementUnitRepository;
     private final JwtProvider jwtProvider;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
     public AuthService(
             UserRepository userRepository,
-            CollegeAdminRepository collegeAdminRepository,
-            CollegeMembershipRepository collegeMembershipRepository,
+            UserManagementUnitRepository userManagementUnitRepository,
             JwtProvider jwtProvider,
             @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId) {
         this.userRepository = userRepository;
-        this.collegeAdminRepository = collegeAdminRepository;
-        this.collegeMembershipRepository = collegeMembershipRepository;
+        this.userManagementUnitRepository = userManagementUnitRepository;
         this.jwtProvider = jwtProvider;
         this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(), new GsonFactory())
@@ -47,7 +44,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String verifyGoogleTokenAndLogin(String credential, String studentId) {
+    public GoogleLoginResult verifyGoogleTokenAndLogin(String credential) {
         GoogleIdToken.Payload payload;
         String googleId;
         String email;
@@ -68,32 +65,59 @@ public class AuthService {
              throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
         }
 
-        User user = userRepository.findByGoogleId(googleId)
-                .orElseGet(() -> registerNewUser(email, name, googleId, studentId));
 
-        return  jwtProvider.createToken(user.getId());
+        return userRepository.findByGoogleId(googleId)
+                .map(user -> {
+                    List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+
+                    return GoogleLoginResult.builder()
+                            .isNewUser(false)
+                            .accessToken(jwtProvider.createAccessToken(user.getId(), managedUnitIds))
+                            .email(user.getEmail())
+                            .name(user.getName())
+                            .build();
+                })
+                .orElseGet(() -> GoogleLoginResult.builder()
+                        .isNewUser(true)
+                        .registerToken(jwtProvider.createRegisterToken(googleId, email, name))
+                        .email(email)
+                        .name(name)
+                        .build());
     }
 
-    private User registerNewUser(String email, String name, String googleId, String studentId) {
-        User newUser = new User(email, name, studentId, googleId);
-
-        return userRepository.save(newUser);
-    }
-
-    private List<Long> getAdminCollegeIds(User user) {
-        if (user.getRole() == UserRole.COLLEGE_ADMIN) {
-            return collegeAdminRepository.findAllByAdminId(user.getId())
-                    .stream()
-                    .map(ca -> ca.getCollege().getId())
-                    .toList();
+    public String registerNewUser(String registerToken, String studentId, UserType type) {
+        RegisterToken registerTokenDto;
+        try {
+            registerTokenDto = jwtProvider.parseRegisterToken(registerToken);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_TOKEN, e);
         }
-        return Collections.emptyList();
-    }
 
-    private List<Long> getApprovedCollegeIds(User user) {
-        return collegeMembershipRepository.findAllByUserId(user.getId())
-                .stream()
-                .map(cm -> cm.getCollege().getId())
-                .toList();
+        if (userRepository.existsByGoogleId(registerTokenDto.googleId())) {
+            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_USER);
+        }
+
+        if (type == UserType.STUDENT) {
+            if (studentId == null || !studentId.matches("^\\d{10}$")) {
+                throw new BusinessException(ErrorCode.INVALID_STUDENT_ID_FORMAT);
+            }
+        } else if (type == UserType.FACULTY) {
+            if (studentId != null && !studentId.isBlank()) {
+                throw new BusinessException(ErrorCode.STUDENT_ID_NOT_ALLOWED);
+            }
+            studentId = null;
+        }
+
+        User newUser = User.builder()
+                .googleId(registerTokenDto.googleId())
+                .email(registerTokenDto.email())
+                .name(registerTokenDto.name())
+                .studentId(studentId)
+                .type(type)
+                .build();
+
+        userRepository.save(newUser);
+
+        return jwtProvider.createAccessToken(newUser.getId(), List.of());
     }
 }

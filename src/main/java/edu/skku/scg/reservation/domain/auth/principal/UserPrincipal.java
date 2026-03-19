@@ -12,11 +12,7 @@ import java.util.List;
 public class UserPrincipal implements UserDetails {
 
     private final Long id;
-    private final String email;
-    private final String name;
-    private final String studentId;
-    private final List<Long> approvedCids;
-    private final List<Long> adminCids;
+    private final List<Long> managedUnitIds;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override
@@ -24,7 +20,7 @@ public class UserPrincipal implements UserDetails {
     @Override
     public String getPassword() { return null; }
     @Override
-    public String getUsername() { return email; }
+    public String getUsername() { return id.toString(); }
 
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
