@@ -36,7 +36,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("type", type)
+                .claim("type", type.name())
                 .claim("managedUnitIds", managedUnitIds)
                 .issuedAt(now)
                 .expiration(expirationDate)
@@ -47,6 +47,8 @@ public class JwtProvider {
     public AccessToken parseAccessToken(String token) {
         Claims claims = getClaims(token);
 
+        UserType type = UserType.valueOf(claims.get("type", String.class));
+
         List<?> rawUnitIds = claims.get("managedUnitIds", List.class);
         List<Long> managedUnitIds = (rawUnitIds != null) ?
                 rawUnitIds.stream()
@@ -56,6 +58,7 @@ public class JwtProvider {
 
         return AccessToken.builder()
                 .userId(Long.parseLong(claims.getSubject()))
+                .type(type)
                 .expiresAt(toLocalDateTime(claims.getExpiration()))
                 .managedUnitIds(managedUnitIds)
                 .build();
