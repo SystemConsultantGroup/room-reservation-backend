@@ -41,7 +41,7 @@ public class AuthController {
     @Operation(
             summary = "로그인",
             description = "구글 Credential을 통해 로그인을 진행하고 JWT 쿠키를 발급합니다. " +
-            "신규 사용자인 경우 응답 본문을 통해 임시 회원 가임 토큰을 반환합니다.")
+            "신규 사용자인 경우 응답 본문을 통해 임시 회원 가입 토큰을 반환합니다.")
     @PublicApi
     @PostMapping("/google")
     public ResponseEntity<GoogleLoginResponseDto> googleLogin(
