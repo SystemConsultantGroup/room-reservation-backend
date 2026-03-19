@@ -1,6 +1,8 @@
 package edu.skku.scg.reservation.domain.user.entity;
 
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
+import edu.skku.scg.reservation.global.exception.BusinessException;
+import edu.skku.scg.reservation.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,11 +32,32 @@ public class User extends BaseTimeEntity {
     private UserType type;
 
     @Builder
-    public User(String email, String name, String studentId, String googleId, UserType type) {
+    public User(String email, String name, String googleId) {
         this.email = email;
         this.name = name;
-        this.studentId = studentId;
         this.googleId = googleId;
-        this.type = type;
+        this.type = UserType.GUEST;
+    }
+
+    public void completeOnboarding(UserType userType, String studentId) {
+        if (this.type != UserType.GUEST) {
+            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_USER);
+        }
+
+        if (userType == UserType.STUDENT) {
+            if (studentId == null || !studentId.matches("^\\d{10}$")) {
+                throw new BusinessException(ErrorCode.INVALID_STUDENT_ID_FORMAT);
+            }
+        } else if (userType == UserType.FACULTY) {
+            if (studentId != null && !studentId.isBlank()) {
+                throw new BusinessException(ErrorCode.STUDENT_ID_NOT_ALLOWED);
+            }
+            studentId = null;
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_USER_TYPE);
+        }
+
+        this.type = userType;
+        this.studentId = studentId;
     }
 }

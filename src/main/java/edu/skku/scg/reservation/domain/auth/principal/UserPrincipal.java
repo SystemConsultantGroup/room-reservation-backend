@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.auth.principal;
 
+import edu.skku.scg.reservation.domain.user.entity.UserType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import java.util.List;
 public class UserPrincipal implements UserDetails {
 
     private final Long id;
+    private final UserType type;
     private final List<Long> managedUnitIds;
     private final Collection<? extends GrantedAuthority> authorities;
 

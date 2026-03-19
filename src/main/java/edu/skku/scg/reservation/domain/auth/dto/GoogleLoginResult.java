@@ -6,7 +6,6 @@ import lombok.Builder;
 public record GoogleLoginResult(
         Boolean isNewUser,
         String accessToken,
-        String registerToken,
         String email,
         String name
 ) {}

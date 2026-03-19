@@ -12,4 +12,5 @@ public interface UserManagementUnitRepository extends JpaRepository<UserManageme
             "FROM UserManagementUnit umu " +
             "WHERE umu.user.id = :userId")
     List<Long> findAllManagedUnitIdsByUserId(Long userId);
+
 }

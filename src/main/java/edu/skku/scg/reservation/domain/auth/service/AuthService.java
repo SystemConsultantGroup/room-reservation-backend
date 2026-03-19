@@ -5,7 +5,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
-import edu.skku.scg.reservation.domain.auth.dto.RegisterToken;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
@@ -15,6 +14,7 @@ import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +43,6 @@ public class AuthService {
                 .build();
     }
 
-    @Transactional
     public GoogleLoginResult verifyGoogleTokenAndLogin(String credential) {
         GoogleIdToken.Payload payload;
         String googleId;
@@ -65,59 +64,42 @@ public class AuthService {
              throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
         }
 
+        User user = userRepository.findByGoogleId(googleId)
+                .orElseGet(() -> registerNewUser(googleId, email, name));
 
-        return userRepository.findByGoogleId(googleId)
-                .map(user -> {
-                    List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+        List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
 
-                    return GoogleLoginResult.builder()
-                            .isNewUser(false)
-                            .accessToken(jwtProvider.createAccessToken(user.getId(), managedUnitIds))
-                            .email(user.getEmail())
-                            .name(user.getName())
-                            .build();
-                })
-                .orElseGet(() -> GoogleLoginResult.builder()
-                        .isNewUser(true)
-                        .registerToken(jwtProvider.createRegisterToken(googleId, email, name))
-                        .email(email)
-                        .name(name)
-                        .build());
+        return GoogleLoginResult.builder()
+                .isNewUser(user.getType() == UserType.GUEST)
+                .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managedUnitIds))
+                .email(user.getEmail())
+                .name(user.getName())
+                .build();
     }
 
-    public String registerNewUser(String registerToken, String studentId, UserType type) {
-        RegisterToken registerTokenDto;
-        try {
-            registerTokenDto = jwtProvider.parseRegisterToken(registerToken);
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.INVALID_TOKEN, e);
-        }
+    @Transactional
+    public String completeOnboarding(Long userId, UserType userType, String studentId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        user.completeOnboarding(userType, studentId);
+        List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+        return jwtProvider.createAccessToken(
+                user.getId(),
+                user.getType(),
+                managedUnitIds
+        );
+    }
 
-        if (userRepository.existsByGoogleId(registerTokenDto.googleId())) {
+    private User registerNewUser(String googleId, String email, String name) {
+        try {
+            User newUser = User.builder()
+                    .googleId(googleId)
+                    .email(email)
+                    .name(name)
+                    .build();
+
+            return userRepository.save(newUser);
+        } catch (DataIntegrityViolationException e) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_USER);
         }
-
-        if (type == UserType.STUDENT) {
-            if (studentId == null || !studentId.matches("^\\d{10}$")) {
-                throw new BusinessException(ErrorCode.INVALID_STUDENT_ID_FORMAT);
-            }
-        } else if (type == UserType.FACULTY) {
-            if (studentId != null && !studentId.isBlank()) {
-                throw new BusinessException(ErrorCode.STUDENT_ID_NOT_ALLOWED);
-            }
-            studentId = null;
-        }
-
-        User newUser = User.builder()
-                .googleId(registerTokenDto.googleId())
-                .email(registerTokenDto.email())
-                .name(registerTokenDto.name())
-                .studentId(studentId)
-                .type(type)
-                .build();
-
-        userRepository.save(newUser);
-
-        return jwtProvider.createAccessToken(newUser.getId(), List.of());
     }
 }
