@@ -14,6 +14,9 @@ public enum ErrorCode {
     UNAUTHENTICATED(UNAUTHORIZED, "AUTH-401", "인증되지 않았습니다."),
     ACCESS_DENIED(FORBIDDEN, "AUTH-403", "접근 권한이 없습니다."),
 
+    INVALID_STUDENT_ID_FORMAT(BAD_REQUEST, "USER-001", "학생의 학번은 10자리 숫자여야 합니다."),
+    STUDENT_ID_NOT_ALLOWED(BAD_REQUEST, "USER-002", "교직원은 학번을 입력할 수 없습니다."),
+    ALREADY_REGISTERED_USER(BAD_REQUEST, "USER-003", "이미 가입된 유저입니다."),
     USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
 
     ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 방입니다."),
