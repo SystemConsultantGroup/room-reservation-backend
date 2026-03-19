@@ -1,6 +1,7 @@
 package edu.skku.scg.reservation.domain.room.entity;
 
 import edu.skku.scg.reservation.domain.organization.entity.Major;
+import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MajorRoom {
+public class MajorRoom extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
