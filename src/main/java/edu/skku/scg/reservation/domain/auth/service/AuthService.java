@@ -67,7 +67,7 @@ public class AuthService {
                 .queryParam("redirect_uri", googleCallbackUri)
                 .queryParam("response_type", "code")
                 .queryParam("scope", "openid email profile")
-                .queryParam("state", originUrl != null ? originUrl : "/")
+                .queryParam("state", originUrl)
                 .build()
                 .toUriString();
     }
