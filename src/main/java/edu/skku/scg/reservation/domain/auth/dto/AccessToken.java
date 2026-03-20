@@ -10,6 +10,6 @@ import java.util.List;
 public record AccessToken(
         Long userId,
         UserType type,
-        List<Long> managedUnitIds,
+        List<Long> managingUnitIds,
         LocalDateTime expiresAt
 ) {}
