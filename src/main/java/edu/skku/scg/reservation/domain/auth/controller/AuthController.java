@@ -1,14 +1,13 @@
 package edu.skku.scg.reservation.domain.auth.controller;
 
 import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
-import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginRequestDto;
-import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResponseDto;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
 import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.auth.service.AuthService;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -17,7 +16,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.Duration;
 
 @Tag(name = "인증 API", description = "구글 로그인 및 로그아웃을 담당하는 API입니다.")
@@ -40,24 +41,46 @@ public class AuthController {
     }
 
     @Operation(
-            summary = "구글 로그인 및 회원가입",
-            description = "구글 ID 토큰을 통해 로그인을 진행하고 JWT 쿠키를 발급합니다. " +
-                    "신규 유저일 경우 회원가입을 진행합니다.")
+            summary = "구글 로그인 시작",
+            description = "구글 로그인 페이지로 리다이렉트합니다.",
+            responses = {
+                @ApiResponse(responseCode = "302")
+            }
+    )
     @PublicApi
-    @PostMapping("/google")
-    public GoogleLoginResponseDto googleLogin(
-            @Valid @RequestBody GoogleLoginRequestDto dto,
-            HttpServletResponse response) {
+    @GetMapping("/login/google")
+    public void redirectToGoogle(
+            @RequestParam(value = "redirectUri") String redirectUri,
+            HttpServletResponse response) throws IOException {
 
-        GoogleLoginResult loginResult = authService.verifyGoogleTokenAndLogin(dto.credential());
+        String googleAuthUrl = authService.getGoogleAuthUrl(redirectUri);
+        response.sendRedirect(googleAuthUrl);
+    }
+
+    @Operation(
+            summary = "구글 OAuth2 콜백",
+            description = "구글 인증 후 코드를 받아 처리를 완료하고 리다이렉트합니다. JWT 쿠키를 발급합니다.",
+            responses = {
+                @ApiResponse(responseCode = "302")
+            }
+    )
+    @PublicApi
+    @GetMapping("/callback/google")
+    public void googleCallback(
+            @RequestParam("code") String code,
+            @RequestParam(value = "state") String state,
+            HttpServletResponse response) throws IOException {
+
+        GoogleLoginResult loginResult = authService.processGoogleCallback(code);
 
         setAccessTokenCookie(response, loginResult.accessToken());
 
-        return GoogleLoginResponseDto.builder()
-                .isNewUser(loginResult.isNewUser())
-                .email(loginResult.email())
-                .name(loginResult.name())
-                .build();
+        String targetUrl = UriComponentsBuilder.fromUriString(state)
+                .queryParam("isGuest", loginResult.isGuest())
+                .build()
+                .toUriString();
+
+        response.sendRedirect(targetUrl);
     }
 
     @Operation(
