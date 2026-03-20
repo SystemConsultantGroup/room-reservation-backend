@@ -1,11 +1,12 @@
 package edu.skku.scg.reservation.domain.auth.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
-import edu.skku.scg.reservation.domain.auth.dto.GoogleTokenResponse;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
@@ -18,12 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -33,9 +32,12 @@ public class AuthService {
     private final UserManagementUnitRepository userManagementUnitRepository;
     private final JwtProvider jwtProvider;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
+    private final NetHttpTransport transport;
+    private final GsonFactory jsonFactory;
+
     private final String googleClientId;
     private final String googleClientSecret;
-    private final String redirectUri;
+    private final String googleCallbackUri;
 
     public AuthService(
             UserRepository userRepository,
@@ -43,16 +45,18 @@ public class AuthService {
             JwtProvider jwtProvider,
             @Value("${oauth.google.client-id}") String googleClientId,
             @Value("${oauth.google.client-secret}") String googleClientSecret,
-            @Value("${oauth.google.redirect-uri}") String redirectUri
+            @Value("${oauth.google.callback-uri}") String googleCallbackUri
     ) {
         this.userRepository = userRepository;
         this.userManagementUnitRepository = userManagementUnitRepository;
         this.jwtProvider = jwtProvider;
         this.googleClientId = googleClientId;
         this.googleClientSecret = googleClientSecret;
-        this.redirectUri = redirectUri;
-        this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
-                new NetHttpTransport(), new GsonFactory())
+        this.googleCallbackUri = googleCallbackUri;
+        this.transport = new NetHttpTransport();
+        this.jsonFactory = new GsonFactory();
+
+        this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
                 .setAudience(List.of(googleClientId))
                 .build();
     }
@@ -60,7 +64,7 @@ public class AuthService {
     public String getGoogleAuthUrl(String originUrl) {
         return UriComponentsBuilder.fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", googleClientId)
-                .queryParam("redirect_uri", redirectUri)
+                .queryParam("redirect_uri", googleCallbackUri)
                 .queryParam("response_type", "code")
                 .queryParam("scope", "openid email profile")
                 .queryParam("state", originUrl != null ? originUrl : "/")
@@ -86,62 +90,48 @@ public class AuthService {
     }
 
     private String fetchIdTokenFromGoogle(String code) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        Map<String, String> params = new HashMap<>();
-        params.put("code", code);
-        params.put("client_id", googleClientId);
-        params.put("client_secret", googleClientSecret);
-        params.put("redirect_uri", redirectUri);
-        params.put("grant_type", "authorization_code");
-
         try {
-            GoogleTokenResponse response = restTemplate.postForObject(
+            GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(
+                    transport,
+                    jsonFactory,
                     "https://oauth2.googleapis.com/token",
-                    params,
-                    GoogleTokenResponse.class
-            );
+                    googleClientId,
+                    googleClientSecret,
+                    code,
+                    googleCallbackUri
+            ).execute();
 
-            if (response == null || response.idToken() == null) {
-                throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL);
-            }
-
-            return response.idToken();
-        } catch (Exception e) {
+            return response.getIdToken();
+        } catch (IOException e) {
             throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
         }
     }
 
     private GoogleLoginResult verifyGoogleTokenAndLogin(String credential) {
-        GoogleIdToken.Payload payload;
-        String googleId;
-        String email;
-        String name;
-
         try {
             GoogleIdToken idToken = googleIdTokenVerifier.verify(credential);
             if (idToken == null) {
                 throw new IllegalArgumentException("유효하지 않은 구글 토큰입니다.");
             }
 
-            payload = idToken.getPayload();
-            googleId = payload.getSubject();
-            email = payload.getEmail();
-            name = payload.get("name").toString();
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String googleId = payload.getSubject();
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+
+            User user = userRepository.findByGoogleId(googleId)
+                    .orElseGet(() -> registerNewUser(googleId, email, name));
+
+            List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+
+            return GoogleLoginResult.builder()
+                    .isGuest(user.getType() == UserType.GUEST)
+                    .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managedUnitIds))
+                    .build();
 
         } catch (Exception e) {
-             throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
+            throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
         }
-
-        User user = userRepository.findByGoogleId(googleId)
-                .orElseGet(() -> registerNewUser(googleId, email, name));
-
-        List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
-
-        return GoogleLoginResult.builder()
-                .isGuest(user.getType() == UserType.GUEST)
-                .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managedUnitIds))
-                .build();
     }
 
     private User registerNewUser(String googleId, String email, String name) {
