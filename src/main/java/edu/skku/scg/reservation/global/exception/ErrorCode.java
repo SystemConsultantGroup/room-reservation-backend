@@ -10,8 +10,9 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 public enum ErrorCode {
     OAUTH_LOGIN_FAIL(UNAUTHORIZED, "AUTH-001", "구글 로그인 처리에 실패했습니다."),
-    INVALID_TOKEN(UNAUTHORIZED, "AUTH-002", "유효하지 않은 토큰입니다."),
     UNAUTHENTICATED(UNAUTHORIZED, "AUTH-401", "인증되지 않았습니다."),
+    INVALID_TOKEN(UNAUTHORIZED, "AUTH-002", "유효하지 않은 토큰입니다."),
+    INVALID_REDIRECT_URL(BAD_REQUEST, "AUTH-003", "허용되지 않은 리다이렉트 주소입니다."),
     ACCESS_DENIED(FORBIDDEN, "AUTH-403", "접근 권한이 없습니다."),
 
     INVALID_STUDENT_ID_FORMAT(BAD_REQUEST, "USER-001", "학생의 학번은 10자리 숫자여야 합니다."),

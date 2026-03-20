@@ -6,11 +6,14 @@ import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.auth.service.AuthService;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
+import edu.skku.scg.reservation.global.exception.BusinessException;
+import edu.skku.scg.reservation.global.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -20,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
 @Tag(name = "인증 API", description = "구글 로그인 및 로그아웃을 담당하는 API입니다.")
 @RestController
@@ -29,15 +33,18 @@ public class AuthController {
     private final AuthService authService;
     private final long jwtExpiration;
     private final boolean cookieSecure;
+    private final List<String> allowedDomains;
 
     AuthController(
             AuthService authService,
             @Value("${jwt.expiration}") long jwtExpiration,
-            @Value("${cookie.secure}") boolean cookieSecure) {
+            @Value("${cookie.secure}") boolean cookieSecure,
+            @Value("${oauth.redirect-uri-whitelist}") List<String> allowedDomains) {
 
         this.authService = authService;
         this.jwtExpiration = jwtExpiration;
         this.cookieSecure = cookieSecure;
+        this.allowedDomains = allowedDomains;
     }
 
     @Operation(
@@ -70,6 +77,8 @@ public class AuthController {
             @RequestParam("code") String code,
             @RequestParam(value = "state") String state,
             HttpServletResponse response) throws IOException {
+
+        validateRedirectUri(state);
 
         GoogleLoginResult loginResult = authService.processGoogleCallback(code);
 
@@ -125,5 +134,38 @@ public class AuthController {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, clearCookie.toString());
+    }
+
+    public void validateRedirectUri(String redirectUri) {
+        if (redirectUri.startsWith("/") && !redirectUri.startsWith("//")) {
+            return;
+        }
+
+        try {
+            java.net.URI uri = java.net.URI.create(redirectUri);
+            String host = uri.getHost();
+
+            if (host == null) {
+                throw new BusinessException(ErrorCode.INVALID_REDIRECT_URL);
+            }
+
+            boolean isAllowed = allowedDomains.stream()
+                    .anyMatch(allowed -> isStrictMatch(host, allowed));
+
+            if (isAllowed) {
+                return;
+            }
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.INVALID_REDIRECT_URL);
+        }
+
+        throw new BusinessException(ErrorCode.INVALID_REDIRECT_URL);
+    }
+
+    private boolean isStrictMatch(String host, String allowed) {
+        if (host.equalsIgnoreCase(allowed)) {
+            return true;
+        }
+        return host.toLowerCase().endsWith("." + allowed.toLowerCase());
     }
 }
