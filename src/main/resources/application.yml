@@ -16,7 +16,7 @@ jwt:
   expiration: 3600000
 
 oauth:
-  redirect-uri-whitelist: ${REDIRECT_DOMAIN_WHITELIST}
+  redirect-uri-whitelist: ${REDIRECT_URI_WHITELIST}
   google:
     client-id: ${GOOGLE_CLIENT_ID}
     client-secret: ${GOOGLE_CLIENT_SECRET}
