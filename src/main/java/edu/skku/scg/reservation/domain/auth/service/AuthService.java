@@ -81,11 +81,11 @@ public class AuthService {
     public String completeOnboarding(Long userId, UserType userType, String studentId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         user.completeOnboarding(userType, studentId);
-        List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+        List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
         return jwtProvider.createAccessToken(
                 user.getId(),
                 user.getType(),
-                managedUnitIds
+                managingUnitIds
         );
     }
 
@@ -122,11 +122,11 @@ public class AuthService {
             User user = userRepository.findByGoogleId(googleId)
                     .orElseGet(() -> registerNewUser(googleId, email, name));
 
-            List<Long> managedUnitIds = userManagementUnitRepository.findAllManagedUnitIdsByUserId(user.getId());
+            List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
 
             return GoogleLoginResult.builder()
                     .isGuest(user.getType() == UserType.GUEST)
-                    .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managedUnitIds))
+                    .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managingUnitIds))
                     .build();
 
         } catch (Exception e) {

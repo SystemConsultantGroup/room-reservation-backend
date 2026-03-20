@@ -20,12 +20,12 @@ public class UserService {
     public UserDetailDto getUserDetail(UserPrincipal principal) {
         User user = userRepository.findById(principal.getId()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         return UserDetailDto.builder()
-                .userId(user.getId())
+                .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .studentId(user.getStudentId())
                 .type(user.getType())
-                .managedUnitIds(principal.getManagedUnitIds())
+                .managingUnitIds(principal.getManagingUnitIds())
                 .build();
     }
 }

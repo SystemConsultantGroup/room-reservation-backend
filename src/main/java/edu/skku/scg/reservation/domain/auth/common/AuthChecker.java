@@ -12,6 +12,6 @@ public class AuthChecker {
         if (principal == null) {
             return false;
         }
-        return principal.getManagedUnitIds().contains(managementUnitId);
+        return principal.getManagingUnitIds().contains(managementUnitId);
     }
 }

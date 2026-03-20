@@ -14,7 +14,7 @@ public class UserPrincipal implements UserDetails {
 
     private final Long id;
     private final UserType type;
-    private final List<Long> managedUnitIds;
+    private final List<Long> managingUnitIds;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override

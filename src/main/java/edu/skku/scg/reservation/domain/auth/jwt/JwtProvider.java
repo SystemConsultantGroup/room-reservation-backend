@@ -30,14 +30,14 @@ public class JwtProvider {
         this.accessTokenExpiration = accessTokenExpiration;
     }
 
-    public String createAccessToken(Long userId, UserType type, List<Long> managedUnitIds) {
+    public String createAccessToken(Long userId, UserType type, List<Long> managingUnitIds) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("type", type.name())
-                .claim("managedUnitIds", managedUnitIds)
+                .claim("managingUnitIds", managingUnitIds)
                 .issuedAt(now)
                 .expiration(expirationDate)
                 .signWith(key)
@@ -49,8 +49,8 @@ public class JwtProvider {
 
         UserType type = UserType.valueOf(claims.get("type", String.class));
 
-        List<?> rawUnitIds = claims.get("managedUnitIds", List.class);
-        List<Long> managedUnitIds = (rawUnitIds != null) ?
+        List<?> rawUnitIds = claims.get("managingUnitIds", List.class);
+        List<Long> managingUnitIds = (rawUnitIds != null) ?
                 rawUnitIds.stream()
                         .map(obj -> Long.valueOf(obj.toString()))
                         .toList()
@@ -60,7 +60,7 @@ public class JwtProvider {
                 .userId(Long.parseLong(claims.getSubject()))
                 .type(type)
                 .expiresAt(toLocalDateTime(claims.getExpiration()))
-                .managedUnitIds(managedUnitIds)
+                .managingUnitIds(managingUnitIds)
                 .build();
     }
 
