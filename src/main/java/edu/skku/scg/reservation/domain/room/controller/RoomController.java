@@ -76,13 +76,13 @@ public class RoomController {
             description = "특정 관리 단위에 속한 공간 목록과 지정된 날짜의 예약 현황을 조회합니다.")
         @PublicApi
         @GetMapping("/schedules")
-        public PageResponse<RoomScheduleResponseDto> getDailyRoomSchedules(
-                @RequestParam Long managementUnitId,
-                @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                @RequestParam(defaultValue = "0") int page,
-                @RequestParam(defaultValue = "10") int size) {
+    public PageResponse<RoomScheduleResponseDto> getDailyRoomSchedules(
+            @RequestParam Long managementUnitId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-            Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<RoomScheduleResponseDto> rooms = roomService.getDailyRoomSchedules(managementUnitId, date, pageable);
 
