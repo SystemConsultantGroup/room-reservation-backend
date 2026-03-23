@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,8 +30,18 @@ public class Room extends BaseTimeEntity {
     @Column(nullable = false)
     private RoomAccessPolicy accessPolicy;
 
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MajorRoom> majorRooms = new ArrayList<>();
+
     @Builder
     public Room(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy) {
+        this.name = name;
+        this.capacity = capacity;
+        this.roomNumber = roomNumber;
+        this.accessPolicy = accessPolicy;
+    }
+
+    public void update(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy) {
         this.name = name;
         this.capacity = capacity;
         this.roomNumber = roomNumber;
