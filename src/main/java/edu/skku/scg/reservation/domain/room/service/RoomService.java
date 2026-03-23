@@ -117,6 +117,7 @@ public class RoomService {
     private void validateMajorsOwnership(List<Long> majorIds, List<Long> managingUnitIds) {
         if (majorIds == null || majorIds.isEmpty()) return;
 
+        majorIds = majorIds.stream().distinct().toList();
         List<Major> majors = majorRepository.findAllById(majorIds);
 
         if (majors.size() != majorIds.size()) {
