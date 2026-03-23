@@ -19,6 +19,8 @@ public enum ErrorCode {
     STUDENT_ID_NOT_ALLOWED(BAD_REQUEST, "USER-002", "교직원은 학번을 입력할 수 없습니다."),
     ALREADY_REGISTERED_USER(BAD_REQUEST, "USER-003", "이미 가입된 유저입니다."),
     INVALID_USER_TYPE(BAD_REQUEST, "USER-004", "잘못된 유저 타입입니다."),
+    INVALID_STUDENT_MAJOR_TYPE(BAD_REQUEST, "USER-005", "학생의 전공 유형은 비어있을 수 없습니다."),
+    INVALID_FACULTY_MAJOR_TYPE(BAD_REQUEST, "USER-006", "교직원은 전공 유형을 입력할 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
 
     ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 공간입니다."),

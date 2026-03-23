@@ -29,11 +29,16 @@ public class UserMajor extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private MajorType type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RegistrationStatus status;
+
     @Builder
     public UserMajor(Long id, User user, Major major, MajorType type) {
         this.id = id;
         this.user = user;
         this.major = major;
         this.type = type;
+        this.status = RegistrationStatus.PENDING;
     }
 }

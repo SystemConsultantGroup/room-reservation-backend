@@ -93,13 +93,14 @@ public class AuthController {
 
     @Operation(
             summary = "추가 정보 등록",
-            description = "GUEST 유저의 학번과 타입을 등록하여 정식 권한을 획득하고 JWT 쿠키를 발급합니다.")
+            description = "GUEST 유저의 학번과 타입, 소속 전공을 등록하여 정식 권한을 획득하고 JWT 쿠키를 발급합니다. " +
+                    "추가로 소속 전공을 통해 승인 요청을 생성합니다.")
     @PostMapping("/onboarding")
     public void onboarding(
             @Valid @RequestBody OnboardingRequestDto dto,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             HttpServletResponse response) {
-        String accessToken = authService.completeOnboarding(userPrincipal.getId(), dto.type(), dto.studentId());
+        String accessToken = authService.completeOnboarding(userPrincipal.getId(), dto);
 
         setAccessTokenCookie(response, accessToken);
     }
