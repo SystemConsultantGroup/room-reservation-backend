@@ -151,6 +151,7 @@ public class RoomService {
     private RoomDetailDto convertToRoomDetailDto(Room room) {
         List<MajorSummaryDto> majors = room.getMajorRooms().stream()
                 .map(majorRoom -> MajorSummaryDto.builder()
+                        .id(majorRoom.getMajor().getId())
                         .name(majorRoom.getMajor().getName())
                         .build()
                 ).toList();
