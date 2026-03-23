@@ -13,6 +13,7 @@ import edu.skku.scg.reservation.domain.room.dto.RoomUpdateRequestDto;
 import edu.skku.scg.reservation.domain.room.entity.MajorRoom;
 import edu.skku.scg.reservation.domain.room.entity.Room;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
+import edu.skku.scg.reservation.domain.user.dto.UserSummaryDto;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -183,6 +184,7 @@ public class RoomService {
                             .id(res.getId())
                             .startTime(res.getStartTime())
                             .endTime(res.getEndTime())
+                            .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
                             .build()
                     ).toList();
 

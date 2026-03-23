@@ -10,6 +10,7 @@ import java.util.List;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
     @Query("SELECT r FROM Reservation r " +
+            "JOIN FETCH r.user " +
             "WHERE r.room.id IN :roomIds " +
             "AND r.startTime < :endTime " +
             "AND r.endTime > :startTime " +
