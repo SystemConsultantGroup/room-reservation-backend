@@ -99,7 +99,7 @@ public class AuthController {
             @Valid @RequestBody OnboardingRequestDto dto,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             HttpServletResponse response) {
-        String accessToken = authService.completeOnboarding(userPrincipal.getId(), dto.type(), dto.studentId());
+        String accessToken = authService.completeOnboarding(userPrincipal.getId(), dto);
 
         setAccessTokenCookie(response, accessToken);
     }

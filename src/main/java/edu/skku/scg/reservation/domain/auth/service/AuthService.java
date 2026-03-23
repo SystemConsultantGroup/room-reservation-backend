@@ -7,11 +7,15 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
+import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
+import edu.skku.scg.reservation.domain.organization.entity.Major;
+import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
 import edu.skku.scg.reservation.domain.user.repository.UserManagementUnitRepository;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
+import edu.skku.scg.reservation.domain.user.service.UserService;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,8 +31,10 @@ import java.util.List;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final MajorRepository majorRepository;
     private final UserManagementUnitRepository userManagementUnitRepository;
     private final JwtProvider jwtProvider;
+    private final UserService userService;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
     private final NetHttpTransport transport;
     private final GsonFactory jsonFactory;
@@ -39,15 +45,19 @@ public class AuthService {
 
     public AuthService(
             UserRepository userRepository,
+            MajorRepository majorRepository,
             UserManagementUnitRepository userManagementUnitRepository,
             JwtProvider jwtProvider,
+            UserService userService,
             @Value("${oauth.google.client-id}") String googleClientId,
             @Value("${oauth.google.client-secret}") String googleClientSecret,
             @Value("${oauth.google.callback-uri}") String googleCallbackUri
     ) {
         this.userRepository = userRepository;
+        this.majorRepository = majorRepository;
         this.userManagementUnitRepository = userManagementUnitRepository;
         this.jwtProvider = jwtProvider;
+        this.userService = userService;
         this.googleClientId = googleClientId;
         this.googleClientSecret = googleClientSecret;
         this.googleCallbackUri = googleCallbackUri;
@@ -76,10 +86,32 @@ public class AuthService {
     }
 
     @Transactional
-    public String completeOnboarding(Long userId, UserType userType, String studentId) {
+    public String completeOnboarding(Long userId, OnboardingRequestDto dto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        user.completeOnboarding(userType, studentId);
+        user.completeOnboarding(dto.userType(), dto.studentId());
+
+        List<Long> majorIds = dto.majors().stream()
+                .map(OnboardingRequestDto.MajorRequest::majorId)
+                .distinct()
+                .toList();
+
+        List<Major> majors = majorRepository.findAllById(majorIds);
+
+        if (majors.size() != majorIds.size()) {
+            throw new BusinessException(ErrorCode.MAJOR_NOT_FOUND);
+        }
+
+        for (OnboardingRequestDto.MajorRequest majorRequest : dto.majors()) {
+            if (dto.userType() == UserType.STUDENT && majorRequest.type() == null) {
+                throw new BusinessException(ErrorCode.INVALID_STUDENT_MAJOR_TYPE);
+            } else if (dto.userType() == UserType.FACULTY && majorRequest.type() != null) {
+                throw new BusinessException(ErrorCode.INVALID_FACULTY_MAJOR_TYPE);
+            }
+            userService.applyMajor(user.getId(), majorRequest.majorId(), majorRequest.type());
+        }
+
         List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
+
         return jwtProvider.createAccessToken(
                 user.getId(),
                 user.getType(),
