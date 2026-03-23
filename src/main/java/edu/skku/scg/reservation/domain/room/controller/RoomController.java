@@ -11,6 +11,7 @@ import edu.skku.scg.reservation.global.annotation.PublicApi;
 import edu.skku.scg.reservation.global.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,7 +35,7 @@ public class RoomController {
     @PostMapping
     public RoomDetailDto createRoom(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody RoomCreateRequestDto dto) {
+            @Valid @RequestBody RoomCreateRequestDto dto) {
 
         return roomService.createRoom(dto, userPrincipal.getManagingUnitIds());
     }
@@ -53,7 +54,7 @@ public class RoomController {
     public RoomDetailDto updateRoom(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long roomId,
-            @RequestBody RoomUpdateRequestDto dto) {
+            @Valid @RequestBody RoomUpdateRequestDto dto) {
         return roomService.updateRoom(
                 roomId,
                 dto,
