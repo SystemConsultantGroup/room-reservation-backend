@@ -13,6 +13,7 @@ public record OnboardingRequestDto(
         @NotNull
         UserType userType,
 
+        @NotNull
         @Valid
         List<MajorRequest> majors
 ) {
