@@ -14,7 +14,6 @@ import edu.skku.scg.reservation.domain.user.repository.UserManagementUnitReposit
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.util.List;
 
-@Slf4j
 @Service
 public class AuthService {
 

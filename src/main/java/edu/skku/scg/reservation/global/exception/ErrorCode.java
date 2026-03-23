@@ -21,7 +21,9 @@ public enum ErrorCode {
     INVALID_USER_TYPE(BAD_REQUEST, "USER-004", "잘못된 유저 타입입니다."),
     USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
 
-    ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 방입니다."),
+    ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 공간입니다."),
+
+    MAJOR_NOT_FOUND(NOT_FOUND, "MAJOR-404", "존재하지 않는 전공입니다."),
 
     SERVER_ERROR(INTERNAL_SERVER_ERROR, "SERVER-500", "서버 내부 오류가 발생했습니다.");
 

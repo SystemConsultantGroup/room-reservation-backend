@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@authChecker.isAdmin(principal, #managementUnitId)")
+@PreAuthorize("principal.managingUnitIds != null && !principal.managingUnitIds.isEmpty()")
 public @interface AdminApi {
 }

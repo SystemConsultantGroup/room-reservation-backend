@@ -8,6 +8,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000
+
 server:
   port: 8000
 
