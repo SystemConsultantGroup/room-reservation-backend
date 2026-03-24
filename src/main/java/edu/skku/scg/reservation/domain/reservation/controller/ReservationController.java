@@ -5,9 +5,11 @@ import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequestD
 import edu.skku.scg.reservation.domain.reservation.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +25,7 @@ public class ReservationController {
     @PostMapping
     public void createReservation(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            CreateReservationRequestDto dto) {
+            @Valid @RequestBody CreateReservationRequestDto dto) {
 
         reservationService.reserveRoom(userPrincipal.getId(), dto);
     }
