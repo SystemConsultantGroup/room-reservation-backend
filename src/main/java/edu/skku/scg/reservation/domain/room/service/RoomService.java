@@ -46,6 +46,7 @@ public class RoomService {
                 .capacity(dto.capacity())
                 .roomNumber(dto.roomNumber())
                 .accessPolicy(dto.accessPolicy())
+                .maxBookingMinutes(dto.maxBookingMinutes())
                 .build();
 
         mapMajorsToRoom(room, dto.majorIds());
@@ -73,7 +74,7 @@ public class RoomService {
         validateMajorsOwnership(currentMajorIds, managingUnitIds);
         validateMajorsOwnership(dto.majorIds(), managingUnitIds);
 
-        room.update(dto.name(), dto.capacity(), dto.roomNumber(), dto.accessPolicy());
+        room.update(dto.name(), dto.capacity(), dto.roomNumber(), dto.accessPolicy(), dto.maxBookingMinutes());
 
         room.getMajorRooms().clear();
         mapMajorsToRoom(room, dto.majorIds());

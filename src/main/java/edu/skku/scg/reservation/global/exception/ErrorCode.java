@@ -23,7 +23,12 @@ public enum ErrorCode {
     INVALID_FACULTY_MAJOR_TYPE(BAD_REQUEST, "USER-006", "교직원은 전공 유형을 입력할 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
 
+    NOT_AVAILABLE_TIME(BAD_REQUEST, "ROOM-001", "예약 가능한 시간이 아닙니다."),
+    EXCEED_MAX_BOOKING_TIME(BAD_REQUEST, "ROOM-002", "최대 예약 시간을 초과했습니다."),
     ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 공간입니다."),
+
+    INVALID_TIME_RANGE(BAD_REQUEST, "TIME-001", "시작 시간이 종료 시간보다 늦습니다."),
+    DATE_MISMATCH(BAD_REQUEST, "TIME-002", "시작 날짜와 종료 날짜가 일치하지 않습니다."),
 
     MAJOR_NOT_FOUND(NOT_FOUND, "MAJOR-404", "존재하지 않는 전공입니다."),
 
