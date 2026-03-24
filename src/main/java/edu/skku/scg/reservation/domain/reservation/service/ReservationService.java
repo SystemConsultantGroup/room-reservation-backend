@@ -62,7 +62,7 @@ public class ReservationService {
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
-        if (startTime.isAfter(endTime)) {
+        if (!startTime.isBefore(endTime)) {
             throw new BusinessException(ErrorCode.INVALID_TIME_RANGE);
         }
 
