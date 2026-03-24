@@ -20,4 +20,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalDateTime startTime,
             LocalDateTime endTime
     );
+
+    @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
+            "WHERE r.room.id = :roomId " +
+            "AND r.startTime < :endTime " +
+            "AND r.endTime > :startTime")
+    boolean existsOverlappingReservation(
+            Long roomId,
+            LocalDateTime startTime,
+            LocalDateTime endTime
+    );
 }

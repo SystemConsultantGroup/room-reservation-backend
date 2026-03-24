@@ -34,11 +34,15 @@ public class Reservation extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
+    @Column(nullable = false)
+    private Integer attendeeCount;
+
     @Builder
-    public Reservation(User user, Room room, LocalDateTime startTime, LocalDateTime endTime) {
+    public Reservation(User user, Room room, LocalDateTime startTime, LocalDateTime endTime, Integer attendeeCount) {
         this.user = user;
         this.room = room;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.attendeeCount = attendeeCount;
     }
 }

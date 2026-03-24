@@ -30,21 +30,28 @@ public class Room extends BaseTimeEntity {
     @Column(nullable = false)
     private RoomAccessPolicy accessPolicy;
 
+    private Integer maxBookingMinutes;
+
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MajorRoom> majorRooms = new ArrayList<>();
 
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomOperatingHour> operatingHours = new ArrayList<>();
+
     @Builder
-    public Room(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy) {
+    public Room(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy, Integer maxBookingMinutes) {
         this.name = name;
         this.capacity = capacity;
         this.roomNumber = roomNumber;
         this.accessPolicy = accessPolicy;
+        this.maxBookingMinutes = maxBookingMinutes;
     }
 
-    public void update(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy) {
+    public void update(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy, Integer maxBookingMinutes) {
         this.name = name;
         this.capacity = capacity;
         this.roomNumber = roomNumber;
         this.accessPolicy = accessPolicy;
+        this.maxBookingMinutes = maxBookingMinutes;
     }
 }
