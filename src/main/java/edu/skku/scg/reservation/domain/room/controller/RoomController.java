@@ -69,8 +69,8 @@ public class RoomController {
     }
 
     @Operation(summary = "특정 날짜의 공간 스케줄 목록 조회")
-        @PublicApi
-        @GetMapping("/schedules")
+    @PublicApi
+    @GetMapping("/schedules")
     public PageResponse<DailyRoomScheduleResponseDto> getDailyRoomSchedules(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "0") int page,
