@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.reservation.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
@@ -21,7 +22,7 @@ public record CreateReservationRequestDto (
         @Positive
         Integer attendeeCount,
 
-        @NotNull
+        @NotBlank
         String purpose
 ) {
 }
