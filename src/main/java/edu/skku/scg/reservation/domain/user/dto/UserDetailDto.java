@@ -12,5 +12,6 @@
             String name,
             String studentId,
             UserType type,
+            List<MajorInfo> majors,
             List<Long> managingUnitIds
     ) {}

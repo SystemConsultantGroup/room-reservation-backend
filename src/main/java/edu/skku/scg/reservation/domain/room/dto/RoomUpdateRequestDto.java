@@ -1,6 +1,7 @@
 package edu.skku.scg.reservation.domain.room.dto;
 
 import edu.skku.scg.reservation.domain.room.entity.RoomAccessPolicy;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,5 +24,9 @@ public record RoomUpdateRequestDto(
         Integer maxBookingMinutes,
 
         @NotEmpty
-        List<Long> majorIds
+        List<Long> majorIds,
+
+        @NotEmpty
+        @Valid
+        List<OperatingHoursDetailDto> operatingHours
 ) {}

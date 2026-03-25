@@ -9,6 +9,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
 import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
+import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
 import edu.skku.scg.reservation.domain.user.entity.User;
@@ -91,7 +92,7 @@ public class AuthService {
         user.completeOnboarding(dto.userType(), dto.studentId());
 
         List<Long> majorIds = dto.majors().stream()
-                .map(OnboardingRequestDto.MajorRequest::majorId)
+                .map(MajorRequest::id)
                 .distinct()
                 .toList();
 
@@ -101,13 +102,13 @@ public class AuthService {
             throw new BusinessException(ErrorCode.MAJOR_NOT_FOUND);
         }
 
-        for (OnboardingRequestDto.MajorRequest majorRequest : dto.majors()) {
+        for (MajorRequest majorRequest : dto.majors()) {
             if (dto.userType() == UserType.STUDENT && majorRequest.type() == null) {
                 throw new BusinessException(ErrorCode.INVALID_STUDENT_MAJOR_TYPE);
             } else if (dto.userType() == UserType.FACULTY && majorRequest.type() != null) {
                 throw new BusinessException(ErrorCode.INVALID_FACULTY_MAJOR_TYPE);
             }
-            userService.applyMajor(user.getId(), majorRequest.majorId(), majorRequest.type());
+            userService.applyMajor(user.getId(), majorRequest.id(), majorRequest.type());
         }
 
         List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());

@@ -19,20 +19,13 @@ public class Major extends BaseTimeEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    private String contact;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "management_unit_id", nullable = false)
     private ManagementUnit managementUnit;
 
     @Builder
-    public Major(String name, String description, String contact, ManagementUnit managementUnit) {
+    public Major(String name, ManagementUnit managementUnit) {
         this.name = name;
-        this.description = description;
-        this.contact = contact;
         this.managementUnit = managementUnit;
     }
 }

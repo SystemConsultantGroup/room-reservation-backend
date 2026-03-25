@@ -1,10 +1,7 @@
 package edu.skku.scg.reservation.domain.room.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.room.dto.RoomCreateRequestDto;
-import edu.skku.scg.reservation.domain.room.dto.RoomDetailDto;
-import edu.skku.scg.reservation.domain.room.dto.RoomScheduleResponseDto;
-import edu.skku.scg.reservation.domain.room.dto.RoomUpdateRequestDto;
+import edu.skku.scg.reservation.domain.room.dto.*;
 import edu.skku.scg.reservation.domain.room.service.RoomService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
@@ -22,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-@Tag(name = "공간 API", description = "공간 정보를 관리하는 API입니다.")
+@Tag(name = "공간 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/rooms")
@@ -71,21 +68,31 @@ public class RoomController {
         roomService.deleteRoom(roomId, userPrincipal.getManagingUnitIds());
     }
 
-    @Operation(
-            summary = "특정 관리 부서의 공간 스케줄 목록 조회",
-            description = "특정 관리 단위에 속한 공간 목록과 지정된 날짜의 예약 현황을 조회합니다.")
-        @PublicApi
-        @GetMapping("/schedules")
-    public PageResponse<RoomScheduleResponseDto> getDailyRoomSchedules(
-            @RequestParam Long managementUnitId,
+    @Operation(summary = "특정 날짜의 공간 스케줄 목록 조회")
+    @PublicApi
+    @GetMapping("/schedules")
+    public PageResponse<DailyRoomScheduleResponseDto> getDailyRoomSchedules(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+        Long managementUnitId = 1L; // TODO: ORIGIN 헤더로부터 추출
+
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<RoomScheduleResponseDto> rooms = roomService.getDailyRoomSchedules(managementUnitId, date, pageable);
+        Page<DailyRoomScheduleResponseDto> rooms = roomService.getDailyRoomSchedules(managementUnitId, date, pageable);
 
         return PageResponse.of(rooms);
+    }
+
+    @Operation(summary = "특정 주차의 공간 스케줄 목록 조회")
+    @PublicApi
+    @GetMapping("{roomId}/schedules")
+    public WeeklyRoomScheduleResponseDto getWeeklyRoomSchedules(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @PathVariable Long roomId
+            ) {
+
+        return null;
     }
 }
