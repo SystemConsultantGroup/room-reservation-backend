@@ -2,6 +2,7 @@ package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.organization.dto.NoticeDetailDto;
 import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequestDto;
+import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +24,7 @@ public class NoticeController {
     }
 
     @Operation(summary = "공지 수정")
-    @PublicApi
+    @AdminApi
     @PutMapping
     public void updateNotice(UpdateNoticeRequestDto dto) {
     }
