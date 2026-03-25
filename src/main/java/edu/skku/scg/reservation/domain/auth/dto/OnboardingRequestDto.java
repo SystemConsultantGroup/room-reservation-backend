@@ -1,6 +1,6 @@
 package edu.skku.scg.reservation.domain.auth.dto;
 
-import edu.skku.scg.reservation.domain.user.entity.MajorType;
+import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record OnboardingRequestDto(
+        @NotNull
+        String name,
+
         String studentId,
 
         @NotNull
@@ -17,11 +20,4 @@ public record OnboardingRequestDto(
         @Valid
         List<MajorRequest> majors
 ) {
-        public record MajorRequest(
-                @NotNull
-                Long majorId,
-
-                MajorType type
-        ) {
-        }
 }

@@ -19,6 +19,9 @@ public record CreateReservationRequestDto (
 
         @NotNull
         @Positive
-        Integer attendeeCount
+        Integer attendeeCount,
+
+        @NotNull
+        String purpose
 ) {
 }

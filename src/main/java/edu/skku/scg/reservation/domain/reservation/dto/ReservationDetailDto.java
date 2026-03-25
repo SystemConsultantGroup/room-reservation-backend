@@ -10,5 +10,7 @@ public record ReservationDetailDto(
         Long id,
         UserSummaryDto user,
         LocalDateTime startTime,
-        LocalDateTime endTime
+        LocalDateTime endTime,
+        Integer attendeeCount,
+        String purpose
 ) {}

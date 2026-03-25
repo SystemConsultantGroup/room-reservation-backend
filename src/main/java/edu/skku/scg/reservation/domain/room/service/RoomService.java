@@ -8,7 +8,7 @@ import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.dto.RoomCreateRequestDto;
 import edu.skku.scg.reservation.domain.room.dto.RoomDetailDto;
-import edu.skku.scg.reservation.domain.room.dto.RoomScheduleResponseDto;
+import edu.skku.scg.reservation.domain.room.dto.DailyRoomScheduleResponseDto;
 import edu.skku.scg.reservation.domain.room.dto.RoomUpdateRequestDto;
 import edu.skku.scg.reservation.domain.room.entity.MajorRoom;
 import edu.skku.scg.reservation.domain.room.entity.Room;
@@ -95,7 +95,7 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
-    public Page<RoomScheduleResponseDto> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
+    public Page<DailyRoomScheduleResponseDto> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
         Page<Room> roomPage = roomRepository.findRoomsByManagementUnitId(managementUnitId, pageable);
 
         if (roomPage.isEmpty()) {
@@ -168,7 +168,7 @@ public class RoomService {
                 .build();
     }
 
-    private Page<RoomScheduleResponseDto> assembleRoomAndReservation(Page<Room> roomPage, List<Reservation> allReservations) {
+    private Page<DailyRoomScheduleResponseDto> assembleRoomAndReservation(Page<Room> roomPage, List<Reservation> allReservations) {
         Map<Long, List<Reservation>> reservationMap = allReservations.stream()
                 .collect(Collectors.groupingBy(reservation -> reservation.getRoom().getId()));
 
@@ -187,10 +187,12 @@ public class RoomService {
                             .startTime(res.getStartTime())
                             .endTime(res.getEndTime())
                             .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
+                            .attendeeCount(res.getAttendeeCount())
+                            .purpose(res.getPurpose())
                             .build()
                     ).toList();
 
-            return RoomScheduleResponseDto.builder()
+            return DailyRoomScheduleResponseDto.builder()
                     .id(room.getId())
                     .name(room.getName())
                     .capacity(room.getCapacity())

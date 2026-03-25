@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
-@Tag(name = "인증 API", description = "구글 로그인 및 로그아웃을 담당하는 API입니다.")
+@Tag(name = "인증 API")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -48,7 +48,6 @@ public class AuthController {
 
     @Operation(
             summary = "구글 로그인 시작",
-            description = "구글 로그인 페이지로 리다이렉트합니다.",
             responses = {
                 @ApiResponse(responseCode = "302")
             }

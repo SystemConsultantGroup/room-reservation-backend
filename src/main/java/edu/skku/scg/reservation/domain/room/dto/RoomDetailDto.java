@@ -11,6 +11,9 @@ public record RoomDetailDto(
         Long id,
         String name,
         Integer capacity,
+        String roomNumber,
         RoomAccessPolicy accessPolicy,
-        List<MajorSummaryDto> majors
+        Integer maxBookingMinutes,
+        List<MajorSummaryDto> majors,
+        List<OperatingHoursDetailDto> operatingHours
 ) {}

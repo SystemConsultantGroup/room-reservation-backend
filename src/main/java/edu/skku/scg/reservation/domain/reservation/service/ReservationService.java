@@ -56,6 +56,7 @@ public class ReservationService {
                 .startTime(dto.startTime())
                 .endTime(dto.endTime())
                 .attendeeCount(dto.attendeeCount())
+                .purpose(dto.purpose())
                 .build();
 
         reservationRepository.save(reservation);

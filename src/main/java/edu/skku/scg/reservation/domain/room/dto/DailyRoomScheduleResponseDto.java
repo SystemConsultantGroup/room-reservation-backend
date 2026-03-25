@@ -8,7 +8,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record RoomScheduleResponseDto (
+public record DailyRoomScheduleResponseDto(
         Long id,
         String name,
         Integer capacity,
