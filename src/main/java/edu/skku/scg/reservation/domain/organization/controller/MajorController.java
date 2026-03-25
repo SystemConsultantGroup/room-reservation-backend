@@ -23,7 +23,7 @@ public class MajorController {
 
     @Operation(summary = "전공 등록 신청 목록 조회")
     @AdminApi
-    @PostMapping("/applications")
+    @GetMapping("/applications")
     public PageResponse<MajorApplicationDetailDto> getApplications(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
