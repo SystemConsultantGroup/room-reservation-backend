@@ -31,6 +31,22 @@ public class MajorController {
         return null;
     }
 
+    @Operation(summary = "전공 등록 신청 승인")
+    @AdminApi
+    @PostMapping("/applications/{applicatoinId}/approve")
+    public void approveApplication(
+            @PathVariable Long applicatoinId
+    ) {
+    }
+
+    @Operation(summary = "전공 등록 신청 거절")
+    @AdminApi
+    @PostMapping("/applications/{applicatoinId}/reject")
+    public void rejectApplication(
+            @PathVariable Long applicatoinId
+    ) {
+    }
+
     @Operation(summary = "전공 목록 조회")
     @GetMapping
     public List<MajorSummaryDto> getMajors() {
