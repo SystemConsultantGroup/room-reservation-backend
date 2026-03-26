@@ -33,17 +33,17 @@ public class MajorController {
 
     @Operation(summary = "전공 등록 신청 승인")
     @AdminApi
-    @PostMapping("/applications/{applicatoinId}/approve")
+    @PostMapping("/applications/{applicationId}/approve")
     public void approveApplication(
-            @PathVariable Long applicatoinId
+            @PathVariable Long applicationId
     ) {
     }
 
     @Operation(summary = "전공 등록 신청 거절")
     @AdminApi
-    @PostMapping("/applications/{applicatoinId}/reject")
+    @PostMapping("/applications/{applicationId}/reject")
     public void rejectApplication(
-            @PathVariable Long applicatoinId
+            @PathVariable Long applicationId
     ) {
     }
 
