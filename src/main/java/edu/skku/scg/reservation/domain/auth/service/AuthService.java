@@ -9,7 +9,6 @@ import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
 import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
-import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
 import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
