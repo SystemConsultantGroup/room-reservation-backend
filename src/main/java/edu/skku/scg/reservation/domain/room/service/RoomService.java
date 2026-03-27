@@ -216,14 +216,28 @@ public class RoomService {
     }
 
     private void mapOperatingHoursToRoom(Room room, List<OperatingHoursDetailDto> dtos) {
+        long distinctCount = dtos.stream()
+                .map(OperatingHoursDetailDto::dayOfWeek)
+                .distinct()
+                .count();
+
+        if (distinctCount != dtos.size()) {
+            throw new BusinessException(ErrorCode.DUPLICATE_DAY_OF_WEEK);
+        }
+
         List<RoomOperatingHour> operatingHours = dtos.stream()
-                .map(dto -> RoomOperatingHour.builder()
-                        .dayOfWeek(dto.dayOfWeek())
-                        .openTime(dto.openTime())
-                        .closeTime(dto.closeTime())
-                        .room(room)
-                        .build()
-                ).toList();
+                .map(dto -> {
+                    if (!dto.openTime().isBefore(dto.closeTime())) {
+                        throw new BusinessException(ErrorCode.INVALID_TIME_ORDER);
+                    }
+
+                    return RoomOperatingHour.builder()
+                            .dayOfWeek(dto.dayOfWeek())
+                            .openTime(dto.openTime())
+                            .closeTime(dto.closeTime())
+                            .room(room)
+                            .build();
+                }).toList();
 
         room.getOperatingHours().addAll(operatingHours);
     }
