@@ -11,6 +11,7 @@ import edu.skku.scg.reservation.global.annotation.PublicApi;
 import edu.skku.scg.reservation.global.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +33,7 @@ public class MajorController {
     @PostMapping("/apply")
     public void applyMajor(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody MajorApplicationRequestDto dto) {
+            @Valid  @RequestBody MajorApplicationRequestDto dto) {
 
         majorService.applyMajor(userPrincipal.getId(), dto.majors());
     }

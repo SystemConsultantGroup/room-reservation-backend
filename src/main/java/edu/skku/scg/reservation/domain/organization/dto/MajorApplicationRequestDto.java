@@ -1,8 +1,13 @@
 package edu.skku.scg.reservation.domain.organization.dto;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.List;
 
 public record MajorApplicationRequestDto(
-    List<MajorRequest> majors
+        @NotEmpty
+        @Valid
+        List<MajorRequest> majors
 ) {
 }
