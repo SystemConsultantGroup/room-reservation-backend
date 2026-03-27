@@ -30,7 +30,6 @@ import java.util.List;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final MajorRepository majorRepository;
     private final UserManagementUnitRepository userManagementUnitRepository;
     private final JwtProvider jwtProvider;
     private final MajorService majorService;
@@ -44,7 +43,6 @@ public class AuthService {
 
     public AuthService(
             UserRepository userRepository,
-            MajorRepository majorRepository,
             UserManagementUnitRepository userManagementUnitRepository,
             JwtProvider jwtProvider,
             MajorService majorService,
@@ -53,7 +51,6 @@ public class AuthService {
             @Value("${oauth.google.callback-uri}") String googleCallbackUri
     ) {
         this.userRepository = userRepository;
-        this.majorRepository = majorRepository;
         this.userManagementUnitRepository = userManagementUnitRepository;
         this.jwtProvider = jwtProvider;
         this.majorService = majorService;
