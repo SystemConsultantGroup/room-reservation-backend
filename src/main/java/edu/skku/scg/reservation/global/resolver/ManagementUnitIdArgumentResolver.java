@@ -37,9 +37,27 @@ public class ManagementUnitIdArgumentResolver implements HandlerMethodArgumentRe
         String originUrl = request.getHeader(HttpHeaders.ORIGIN);
 
         if (originUrl == null || originUrl.isBlank()) {
-            throw new BusinessException(ErrorCode.UNREGISTERED_ORIGIN);
+            String secFetchSite = request.getHeader("Sec-Fetch-Site");
+
+            if ("same-origin".equals(secFetchSite)) {
+                String scheme = getScheme(request);
+                String host = getHost(request);
+                originUrl = scheme + "://" + host;
+            } else {
+                throw new BusinessException(ErrorCode.UNREGISTERED_ORIGIN);
+            }
         }
 
         return originService.getManagementUnitId(originUrl);
+    }
+
+    private String getHost(HttpServletRequest request) {
+        String forwardedHost = request.getHeader("X-Forwarded-Host");
+        return (forwardedHost != null && !forwardedHost.isBlank()) ? forwardedHost : request.getHeader(HttpHeaders.HOST);
+    }
+
+    private String getScheme(HttpServletRequest request) {
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        return (forwardedProto != null && !forwardedProto.isBlank()) ? forwardedProto : request.getScheme();
     }
 }
