@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.room.entity;
 
+import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -37,6 +38,9 @@ public class Room extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomOperatingHour> operatingHours = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reservation> reservations = new ArrayList<>();
 
     @Builder
     public Room(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy, Integer maxBookingMinutes) {

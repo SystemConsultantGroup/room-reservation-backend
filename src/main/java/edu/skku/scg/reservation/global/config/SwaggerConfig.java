@@ -2,13 +2,16 @@ package edu.skku.scg.reservation.global.config;
 
 import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
+import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import jakarta.annotation.PostConstruct;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +19,11 @@ import java.util.Collections;
 
 @Configuration
 public class SwaggerConfig {
+
+    @PostConstruct
+    public void initSwaggerConfig() {
+        SpringDocUtils.getConfig().addAnnotationsToIgnore(ManagementUnitId.class);
+    }
 
     @Bean
     public OpenAPI openAPI() {
