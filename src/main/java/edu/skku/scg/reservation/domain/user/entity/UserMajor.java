@@ -41,4 +41,12 @@ public class UserMajor extends BaseTimeEntity {
         this.type = type;
         this.status = RegistrationStatus.PENDING;
     }
+
+    public void approve() {
+        this.status = RegistrationStatus.APPROVED;
+    }
+
+    public void reject() {
+        this.status = RegistrationStatus.REJECTED;
+    }
 }

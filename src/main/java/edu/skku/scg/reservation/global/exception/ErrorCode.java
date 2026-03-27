@@ -33,6 +33,12 @@ public enum ErrorCode {
     INVALID_TIME_RANGE(BAD_REQUEST, "TIME-001", "시작 시간이 종료 시간보다 늦습니다."),
     DATE_MISMATCH(BAD_REQUEST, "TIME-002", "시작 날짜와 종료 날짜가 일치하지 않습니다."),
 
+    MAJOR_ALREADY_APPLIED(BAD_REQUEST, "MAJOR-001", "이미 신청한 전공입니다."),
+    USER_MAJOR_NOT_FOUND(NOT_FOUND, "MAJOR-002", "전공 신청 정보가 존재하지 않습니다."),
+    ALREADY_PROCESSED_MAJOR_REGISTRATION(BAD_REQUEST, "MAJOR-003", "이미 처리된 전공 신청입니다."),
+    ALREADY_HELD_MAJOR_TYPE(BAD_REQUEST, "MAJOR-004", "이미 승인된 동일한 전공 유형이 존재합니다."),
+    DUPLICATE_MAJOR_TYPE_REQUEST(BAD_REQUEST, "MAJOR-005", "동일한 전공 유형을 중복해서 신청할 수 없습니다."),
+    DUPLICATE_MAJOR_REQUEST(BAD_REQUEST, "MAJOR-006", "동일한 전공을 중복해서 신청할 수 없습니다."),
     MAJOR_NOT_FOUND(NOT_FOUND, "MAJOR-404", "존재하지 않는 전공입니다."),
 
     MANAGEMENT_UNIT_NOT_FOUND(NOT_FOUND, "UNIT-404", "존재하지 않는 관리 단위입니다."),

@@ -9,14 +9,11 @@ import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
 import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
-import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
-import edu.skku.scg.reservation.domain.organization.entity.Major;
-import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
+import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
 import edu.skku.scg.reservation.domain.user.repository.UserManagementUnitRepository;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
-import edu.skku.scg.reservation.domain.user.service.UserService;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,10 +29,9 @@ import java.util.List;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final MajorRepository majorRepository;
     private final UserManagementUnitRepository userManagementUnitRepository;
     private final JwtProvider jwtProvider;
-    private final UserService userService;
+    private final MajorService majorService;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
     private final NetHttpTransport transport;
     private final GsonFactory jsonFactory;
@@ -46,19 +42,17 @@ public class AuthService {
 
     public AuthService(
             UserRepository userRepository,
-            MajorRepository majorRepository,
             UserManagementUnitRepository userManagementUnitRepository,
             JwtProvider jwtProvider,
-            UserService userService,
+            MajorService majorService,
             @Value("${oauth.google.client-id}") String googleClientId,
             @Value("${oauth.google.client-secret}") String googleClientSecret,
             @Value("${oauth.google.callback-uri}") String googleCallbackUri
     ) {
         this.userRepository = userRepository;
-        this.majorRepository = majorRepository;
         this.userManagementUnitRepository = userManagementUnitRepository;
         this.jwtProvider = jwtProvider;
-        this.userService = userService;
+        this.majorService = majorService;
         this.googleClientId = googleClientId;
         this.googleClientSecret = googleClientSecret;
         this.googleCallbackUri = googleCallbackUri;
@@ -91,25 +85,7 @@ public class AuthService {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         user.completeOnboarding(dto.userType(), dto.studentId());
 
-        List<Long> majorIds = dto.majors().stream()
-                .map(MajorRequest::id)
-                .distinct()
-                .toList();
-
-        List<Major> majors = majorRepository.findAllById(majorIds);
-
-        if (majors.size() != majorIds.size()) {
-            throw new BusinessException(ErrorCode.MAJOR_NOT_FOUND);
-        }
-
-        for (MajorRequest majorRequest : dto.majors()) {
-            if (dto.userType() == UserType.STUDENT && majorRequest.type() == null) {
-                throw new BusinessException(ErrorCode.INVALID_STUDENT_MAJOR_TYPE);
-            } else if (dto.userType() == UserType.FACULTY && majorRequest.type() != null) {
-                throw new BusinessException(ErrorCode.INVALID_FACULTY_MAJOR_TYPE);
-            }
-            userService.applyMajor(user.getId(), majorRequest.id(), majorRequest.type());
-        }
+        majorService.applyMajor(user.getId(), dto.majors());
 
         List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
 
