@@ -12,8 +12,8 @@ public record OperatingHoursDetailDto(
         DayOfWeek dayOfWeek,
 
         @NotNull
-        LocalTime startTime,
+        LocalTime openTime,
 
         @NotNull
-        LocalTime endTime
+        LocalTime closeTime
 ) {}

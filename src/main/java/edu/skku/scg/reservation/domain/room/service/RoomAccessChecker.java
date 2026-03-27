@@ -18,6 +18,10 @@ import java.util.stream.Collectors;
 public class RoomAccessChecker {
 
     public void checkAccess(User user, Room room) {
+        if (user.getType() == UserType.GUEST) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
         if (!hasOverlappingMajor(user, room)) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }

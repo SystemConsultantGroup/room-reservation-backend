@@ -21,6 +21,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalDateTime endTime
     );
 
+    @Query("SELECT r FROM Reservation r " +
+            "JOIN FETCH r.user " +
+            "WHERE r.room.id = :roomId " +
+            "AND r.startTime < :endTime " +
+            "AND r.endTime > :startTime " +
+            "ORDER BY r.startTime ASC")
+    List<Reservation> findReservationsByRoomIdAndDate(
+            Long roomId,
+            LocalDateTime startTime,
+            LocalDateTime endTime
+    );
+
     @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
             "WHERE r.room.id = :roomId " +
             "AND r.startTime < :endTime " +

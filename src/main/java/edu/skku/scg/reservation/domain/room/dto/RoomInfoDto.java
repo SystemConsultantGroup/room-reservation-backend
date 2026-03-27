@@ -1,21 +1,19 @@
 package edu.skku.scg.reservation.domain.room.dto;
 
 import edu.skku.scg.reservation.domain.organization.dto.MajorSummaryDto;
-import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetailDto;
 import edu.skku.scg.reservation.domain.room.entity.RoomAccessPolicy;
 import lombok.Builder;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @Builder
-public record DailyRoomScheduleResponseDto(
+public record RoomInfoDto(
         Long id,
         String name,
         Integer capacity,
+        String roomNumber,
         RoomAccessPolicy accessPolicy,
-        LocalTime openTime,
-        LocalTime closeTime,
-        List<MajorSummaryDto> majors,
-        List<ReservationDetailDto> reservations
-) {}
+        Integer maxBookingMinutes,
+        List<MajorSummaryDto> majors
+) {
+}
