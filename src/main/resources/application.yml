@@ -15,6 +15,7 @@ spring:
 
 server:
   port: 8000
+  forward-headers-strategy: framework
 
 jwt:
   secret: ${JWT_SECRET}
