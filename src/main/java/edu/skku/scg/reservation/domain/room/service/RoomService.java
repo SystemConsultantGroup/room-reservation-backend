@@ -10,8 +10,6 @@ import edu.skku.scg.reservation.domain.room.dto.*;
 import edu.skku.scg.reservation.domain.room.entity.MajorRoom;
 import edu.skku.scg.reservation.domain.room.entity.Room;
 import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
-import edu.skku.scg.reservation.domain.room.repository.MajorRoomRepository;
-import edu.skku.scg.reservation.domain.room.repository.RoomOperatingHourRepository;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
 import edu.skku.scg.reservation.domain.user.dto.UserSummaryDto;
 import edu.skku.scg.reservation.domain.user.entity.User;
@@ -40,8 +38,6 @@ public class RoomService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final MajorRepository majorRepository;
-    private final RoomOperatingHourRepository roomOperatingHourRepository;
-    private final MajorRoomRepository majorRoomRepository;
     private final RoomAccessChecker roomAccessChecker;
 
     @Transactional
@@ -60,15 +56,6 @@ public class RoomService {
         mapOperatingHoursToRoom(room, dto.operatingHours());
 
         roomRepository.save(room);
-    }
-
-    public RoomResponseDto getRoom(Long roomId, Long userId) {
-        Room room = roomRepository.findByIdWithMajors(roomId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
-
-        User user = userId == null ? null : userRepository.findByIdWithMajors(userId).orElse(null);
-
-        return convertToRoomDetailDto(room, user);
     }
 
     @Transactional
@@ -105,62 +92,20 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
-    public Page<DailyRoomScheduleResponseDto> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
-        Page<Room> roomPage = roomRepository.findRoomsByManagementUnitId(managementUnitId, pageable);
+    public RoomResponseDto getRoom(Long roomId, Long userId) {
+        Room room = roomRepository.findByIdWithMajors(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-        if (roomPage.isEmpty()) {
-            return Page.empty(pageable);
-        }
+        User user = userId == null ? null : userRepository.findByIdWithMajors(userId).orElse(null);
 
-        List<Long> roomIds = roomPage.getContent().stream()
-                .map(Room::getId)
-                .toList();
-
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
-        List<Reservation> allReservations = reservationRepository
-                .findReservationsByRoomIdsAndDate(roomIds, startOfDay, endOfDay);
-
-        List<RoomOperatingHour> operatingHours = roomOperatingHourRepository
-                .findAllByRoomIdInAndDayOfWeek(roomIds, date.getDayOfWeek());
-
-        return assembleDailyRoomSchedule(roomPage, allReservations, operatingHours);
-    }
-
-    public RoomSummaryListDto getRoomSummaries(Long managementUnitId) {
-        List<Room> rooms = roomRepository.findAllByManagementUnitId(managementUnitId);
-
-        List<RoomSummaryDto> dtos = rooms.stream().map(
-                room -> RoomSummaryDto.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .build()).toList();
-
-        return RoomSummaryListDto.builder()
-                .content(dtos)
-                .build();
+        return convertToRoomDetailDto(room, user);
     }
 
     public Page<RoomInfoDto> getRooms(List<Long> managingUnitIds, Pageable pageable) {
         Page<Room> roomPage = roomRepository.findRoomsByManagementUnitIds(managingUnitIds, pageable);
 
-        if (roomPage.isEmpty()) {
-            return Page.empty(pageable);
-        }
-
-        List<Long> roomIds = roomPage.getContent().stream()
-                .map(Room::getId)
-                .toList();
-
-        List<MajorRoom> allMajorRooms = majorRoomRepository.findByRoomIdsWithMajors(roomIds);
-
-        Map<Long, List<MajorRoom>> majorRoomMap = allMajorRooms.stream()
-                .collect(Collectors.groupingBy(mr -> mr.getRoom().getId()));
-
         return roomPage.map(room -> {
-            List<MajorRoom> myMajorRooms = majorRoomMap.getOrDefault(room.getId(), List.of());
-
-            List<MajorSummaryDto> majors = myMajorRooms.stream()
+            List<MajorSummaryDto> majors = room.getMajorRooms().stream()
                     .map(mr -> MajorSummaryDto.builder()
                             .id(mr.getMajor().getId())
                             .name(mr.getMajor().getName())
@@ -177,6 +122,109 @@ public class RoomService {
                     .majors(majors)
                     .build();
         });
+    }
+
+    public RoomSummaryListDto getRoomSummaries(Long managementUnitId) {
+        List<Room> rooms = roomRepository.findAllByManagementUnitId(managementUnitId);
+
+        List<RoomSummaryDto> dtos = rooms.stream().map(
+                room -> RoomSummaryDto.builder()
+                        .id(room.getId())
+                        .name(room.getName())
+                        .build()).toList();
+
+        return RoomSummaryListDto.builder()
+                .content(dtos)
+                .build();
+    }
+
+    public Page<DailyRoomScheduleResponseDto> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
+        Page<Room> roomPage = roomRepository.findRoomsByManagementUnitId(managementUnitId, pageable);
+
+        if (roomPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> roomIds = roomPage.getContent().stream().map(Room::getId).toList();
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        List<Reservation> allReservations = reservationRepository
+                .findReservationsByRoomIdsAndDate(roomIds, startOfDay, endOfDay);
+
+        Map<Long, List<Reservation>> reservationMap = allReservations.stream()
+                .collect(Collectors.groupingBy(reservation -> reservation.getRoom().getId()));
+
+        return roomPage.map(room -> {
+            Long roomId = room.getId();
+
+            List<MajorSummaryDto> majors = room.getMajorRooms().stream()
+                    .map(majorRoom -> MajorSummaryDto.builder()
+                            .id(majorRoom.getMajor().getId())
+                            .name(majorRoom.getMajor().getName())
+                            .build()
+                    ).toList();
+
+            List<Reservation> roomReservations = reservationMap.getOrDefault(roomId, List.of());
+            List<ReservationDetailDto> reservations = roomReservations.stream()
+                    .map(res -> ReservationDetailDto.builder()
+                            .id(res.getId())
+                            .startTime(res.getStartTime())
+                            .endTime(res.getEndTime())
+                            .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
+                            .attendeeCount(res.getAttendeeCount())
+                            .purpose(res.getPurpose())
+                            .build()
+                    ).toList();
+
+            RoomOperatingHour todayHour = room.getOperatingHours().stream()
+                    .filter(hour -> hour.getDayOfWeek().equals(date.getDayOfWeek()))
+                    .findFirst()
+                    .orElse(null);
+
+            return DailyRoomScheduleResponseDto.builder()
+                    .id(room.getId())
+                    .name(room.getName())
+                    .capacity(room.getCapacity())
+                    .accessPolicy(room.getAccessPolicy())
+                    .openTime(todayHour != null ? todayHour.getOpenTime() : null)
+                    .closeTime(todayHour != null ? todayHour.getCloseTime() : null)
+                    .majors(majors)
+                    .reservations(reservations)
+                    .build();
+        });
+    }
+
+    public WeeklyRoomScheduleResponseDto getWeeklyRoomSchedules(LocalDate date, Long roomId) {
+        if (!roomRepository.existsById(roomId)) {
+            throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
+        }
+
+        int daysFromSunday = date.getDayOfWeek().getValue() % 7;
+
+        LocalDate startOfWeek = date.minusDays(daysFromSunday);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
+        LocalDateTime endDateTime = endOfWeek.plusDays(1).atStartOfDay();
+
+        List<Reservation> weeklyReservations = reservationRepository
+                .findReservationsByRoomIdAndDate(roomId, startDateTime, endDateTime);
+
+        List<ReservationDetailDto> reservationDtos = weeklyReservations.stream()
+                .map(res -> ReservationDetailDto.builder()
+                        .id(res.getId())
+                        .startTime(res.getStartTime())
+                        .endTime(res.getEndTime())
+                        .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
+                        .attendeeCount(res.getAttendeeCount())
+                        .purpose(res.getPurpose())
+                        .build()
+                ).toList();
+
+        return WeeklyRoomScheduleResponseDto.builder()
+                .id(roomId)
+                .reservations(reservationDtos)
+                .build();
     }
 
     private void validateMajorsOwnership(List<Long> majorIds, List<Long> managingUnitIds) {
@@ -284,94 +332,5 @@ public class RoomService {
         }
 
         return false;
-    }
-
-    private Page<DailyRoomScheduleResponseDto> assembleDailyRoomSchedule(
-            Page<Room> roomPage,
-            List<Reservation> allReservations,
-            List<RoomOperatingHour> operatingHours) {
-
-        Map<Long, List<Reservation>> reservationMap = allReservations.stream()
-                .collect(Collectors.groupingBy(reservation -> reservation.getRoom().getId()));
-
-        Map<Long, List<RoomOperatingHour>> operatingHourMap = operatingHours.stream()
-                .collect(Collectors.groupingBy(hour -> hour.getRoom().getId()));
-
-        return roomPage.map(room -> {
-            Long roomId = room.getId();
-
-            List<MajorSummaryDto> majors = room.getMajorRooms().stream()
-                    .map(majorRoom -> MajorSummaryDto.builder()
-                            .id(majorRoom.getMajor().getId())
-                            .name(majorRoom.getMajor().getName())
-                            .build()
-                    ).toList();
-
-            List<Reservation> roomReservations = reservationMap.getOrDefault(roomId, List.of());
-            List<ReservationDetailDto> reservations = roomReservations.stream()
-                    .map(res -> ReservationDetailDto.builder()
-                            .id(res.getId())
-                            .startTime(res.getStartTime())
-                            .endTime(res.getEndTime())
-                            .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
-                            .attendeeCount(res.getAttendeeCount())
-                            .purpose(res.getPurpose())
-                            .build()
-                    ).toList();
-
-            List<RoomOperatingHour> myOperatingHours = operatingHourMap.getOrDefault(roomId, List.of());
-            LocalTime openTime = null;
-            LocalTime closeTime = null;
-
-            if (!myOperatingHours.isEmpty()) {
-                RoomOperatingHour todayHour = myOperatingHours.get(0);
-                openTime = todayHour.getOpenTime();
-                closeTime = todayHour.getCloseTime();
-            }
-
-            return DailyRoomScheduleResponseDto.builder()
-                    .id(room.getId())
-                    .name(room.getName())
-                    .capacity(room.getCapacity())
-                    .accessPolicy(room.getAccessPolicy())
-                    .openTime(openTime)
-                    .closeTime(closeTime)
-                    .majors(majors)
-                    .reservations(reservations)
-                    .build();
-        });
-    }
-
-    public WeeklyRoomScheduleResponseDto getWeeklyRoomSchedules(LocalDate date, Long roomId) {
-        if (!roomRepository.existsById(roomId)) {
-            throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
-        }
-
-        int daysFromSunday = date.getDayOfWeek().getValue() % 7;
-
-        LocalDate startOfWeek = date.minusDays(daysFromSunday);
-        LocalDate endOfWeek = startOfWeek.plusDays(6);
-
-        LocalDateTime startDateTime = startOfWeek.atStartOfDay();
-        LocalDateTime endDateTime = endOfWeek.plusDays(1).atStartOfDay();
-
-        List<Reservation> weeklyReservations = reservationRepository
-                .findReservationsByRoomIdAndDate(roomId, startDateTime, endDateTime);
-
-        List<ReservationDetailDto> reservationDtos = weeklyReservations.stream()
-                .map(res -> ReservationDetailDto.builder()
-                        .id(res.getId())
-                        .startTime(res.getStartTime())
-                        .endTime(res.getEndTime())
-                        .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
-                        .attendeeCount(res.getAttendeeCount())
-                        .purpose(res.getPurpose())
-                        .build()
-                ).toList();
-
-        return WeeklyRoomScheduleResponseDto.builder()
-                .id(roomId)
-                .reservations(reservationDtos)
-                .build();
     }
 }
