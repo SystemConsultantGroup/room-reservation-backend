@@ -29,4 +29,9 @@ public class ManagementUnit extends BaseTimeEntity {
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
     }
+
+    public void updateNotice(String title, String content) {
+        this.noticeTitle = title;
+        this.noticeContent = content;
+    }
 }
