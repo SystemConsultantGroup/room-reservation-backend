@@ -119,8 +119,8 @@ public class MajorService {
         userMajor.reject();
     }
 
-    public List<MajorSummaryDto> getMajorSummaries(Long ManagementUnitId) {
-        List<Major> majors = majorRepository.findAllByManagementUnitId(ManagementUnitId);
+    public List<MajorSummaryDto> getMajorSummaries(Long managementUnitId) {
+        List<Major> majors = majorRepository.findAllByManagementUnitId(managementUnitId);
         return majors.stream()
                 .map(major -> MajorSummaryDto.builder()
                         .id(major.getId())
