@@ -149,7 +149,7 @@ public class MajorService {
         }
 
         Page<User> users = userRepository.
-                findApplicantsByUnitIds(
+                findUsersByUnitIdsAndRegistrationStatus(
                 managingUnitIds,
                 RegistrationStatus.PENDING,
                 pageable,

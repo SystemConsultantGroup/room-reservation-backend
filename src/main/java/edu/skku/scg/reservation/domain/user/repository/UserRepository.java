@@ -24,24 +24,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "JOIN u.userMajors um " +
             "JOIN um.major m " +
             "WHERE m.managementUnit.id IN :managementUnitIds " +
-            "AND (:keyword IS NULL OR " +
-                "u.name LIKE %:keyword% OR " +
-                "u.studentId LIKE %:keyword% OR " +
-                "u.email LIKE %:keyword%)")
-    Page<User> findUsersByUnitIds(
-            List<Long> managementUnitIds,
-            Pageable pageable,
-            String keyword
-    );
-
-    @Query("SELECT DISTINCT u FROM User u " +
-            "JOIN u.userMajors um " +
-            "JOIN um.major m " +
-            "WHERE m.managementUnit.id IN :managementUnitIds " +
             "AND um.status = :status " +
             "AND (:keyword IS NULL OR " +
                 "u.name LIKE %:keyword% OR " +
                 "u.studentId LIKE %:keyword% OR " +
                 "u.email LIKE %:keyword%)")
-    Page<User> findApplicantsByUnitIds(List<Long> managementUnitIds, RegistrationStatus status, Pageable pageable, String keyword);
+    Page<User> findUsersByUnitIdsAndRegistrationStatus(List<Long> managementUnitIds, RegistrationStatus status, Pageable pageable, String keyword);
 }

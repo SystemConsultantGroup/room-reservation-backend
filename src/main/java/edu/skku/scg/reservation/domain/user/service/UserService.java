@@ -48,7 +48,13 @@ public class UserService {
     }
 
     public Page<UserInfo> getUsers(List<Long> managementUnitIds, Pageable pageable, String keyword) {
-        Page<User> users = userRepository.findUsersByUnitIds(managementUnitIds, pageable, keyword);
+        Page<User> users = userRepository
+                .findUsersByUnitIdsAndRegistrationStatus(
+                        managementUnitIds,
+                        RegistrationStatus.APPROVED,
+                        pageable,
+                        keyword);
+
         return users.map(user -> UserInfo.builder()
                 .id(user.getId())
                 .email(user.getEmail())
