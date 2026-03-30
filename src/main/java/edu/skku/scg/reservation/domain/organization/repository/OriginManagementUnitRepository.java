@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface OriginManagementUnitRepository extends JpaRepository<OriginManagementUnit, Long> {
 
     @Cacheable(cacheNames = "originManagementUnitId", key = "#originUrl")
-    Optional<OriginManagementUnit> findByOriginUrl(String originUrl);
+    Optional<Long> findManagementUnitIdByOriginUrl(String originUrl);
 }

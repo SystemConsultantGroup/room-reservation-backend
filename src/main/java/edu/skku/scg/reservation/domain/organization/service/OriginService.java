@@ -15,9 +15,8 @@ public class OriginService {
     private final OriginManagementUnitRepository originManagementUnitRepository;
 
     public Long getManagementUnitId(String originUrl) {
-        return originManagementUnitRepository.findByOriginUrl(originUrl).
-                orElseThrow(() -> new BusinessException(ErrorCode.UNREGISTERED_ORIGIN))
-                .getManagementUnit().getId();
+        return originManagementUnitRepository.findManagementUnitIdByOriginUrl(originUrl).
+                orElseThrow(() -> new BusinessException(ErrorCode.UNREGISTERED_ORIGIN));
     }
 
     public void validateOriginUrl(String originUrl) {
