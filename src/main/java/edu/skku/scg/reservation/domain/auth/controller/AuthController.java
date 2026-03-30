@@ -57,7 +57,7 @@ public class AuthController {
     @PublicApi
     @GetMapping("/login/google")
     public ResponseEntity<Void> redirectToGoogle(HttpServletRequest request) {
-        String redirectUri = HttpUtils.reconstructOrigin(request);
+        String redirectUri = HttpUtils.extractOrigin(request);
         String googleAuthUrl = authService.getGoogleAuthUrl(redirectUri);
 
         return ResponseEntity.status(HttpStatus.FOUND)

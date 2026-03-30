@@ -36,17 +36,7 @@ public class ManagementUnitIdArgumentResolver implements HandlerMethodArgumentRe
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
-        String originUrl = request.getHeader(HttpHeaders.ORIGIN);
-
-        if (!StringUtils.hasText(originUrl)) {
-            String secFetchSite = request.getHeader("Sec-Fetch-Site");
-
-            if ("same-origin".equals(secFetchSite)) {
-                originUrl = HttpUtils.reconstructOrigin(request);
-            } else {
-                throw new BusinessException(ErrorCode.UNREGISTERED_ORIGIN);
-            }
-        }
+        String originUrl = HttpUtils.extractOrigin(request);
 
         return originService.getManagementUnitId(originUrl);
     }
