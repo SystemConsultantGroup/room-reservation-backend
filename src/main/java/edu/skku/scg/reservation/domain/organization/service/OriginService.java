@@ -4,7 +4,6 @@ import edu.skku.scg.reservation.domain.organization.repository.OriginManagementU
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +14,13 @@ public class OriginService {
 
     private final OriginManagementUnitRepository originManagementUnitRepository;
 
-    @Cacheable(cacheNames = "originManagementUnitId", key = "#originUrl")
     public Long getManagementUnitId(String originUrl) {
         return originManagementUnitRepository.findByOriginUrl(originUrl).
                 orElseThrow(() -> new BusinessException(ErrorCode.UNREGISTERED_ORIGIN))
                 .getManagementUnit().getId();
+    }
+
+    public void validateOriginUrl(String originUrl) {
+        this.getManagementUnitId(originUrl);
     }
 }
