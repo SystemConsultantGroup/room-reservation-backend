@@ -23,7 +23,13 @@ public class HttpUtils {
         if (StringUtils.hasText(referer)) {
             try {
                 URI uri = URI.create(referer);
-                return uri.getScheme() + "://" + uri.getAuthority();
+                String scheme = uri.getScheme();
+                String authority = uri.getAuthority();
+
+                if (StringUtils.hasText(scheme) && StringUtils.hasText(authority) &&
+                        (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
+                    return scheme + "://" + authority;
+                }
             } catch (IllegalArgumentException ignored) {
             }
         }
