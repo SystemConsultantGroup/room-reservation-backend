@@ -148,7 +148,8 @@ public class MajorService {
             keyword = null;
         }
 
-        Page<User> users = userRepository.findApplicantsByUnitIds(
+        Page<User> users = userRepository.
+                findApplicantsByUnitIds(
                 managingUnitIds,
                 RegistrationStatus.PENDING,
                 pageable,
