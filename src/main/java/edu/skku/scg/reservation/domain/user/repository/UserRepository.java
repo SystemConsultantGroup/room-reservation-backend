@@ -29,5 +29,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
                 "u.name LIKE %:keyword% OR " +
                 "u.studentId LIKE %:keyword% OR " +
                 "u.email LIKE %:keyword%)")
-    Page<User> findApplicantsByUnitIds(List<Long> managementUnitIds, RegistrationStatus status, Pageable pageable, String keyword);
+    Page<User> findUsersByUnitIdsAndRegistrationStatus(List<Long> managementUnitIds, RegistrationStatus status, Pageable pageable, String keyword);
 }
