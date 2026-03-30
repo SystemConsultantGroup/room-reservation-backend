@@ -4,6 +4,7 @@ import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
 import edu.skku.scg.reservation.domain.user.dto.UserDetailDto;
 import edu.skku.scg.reservation.domain.user.dto.UserInfo;
+import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -27,6 +28,7 @@ public class UserService {
         User user = userRepository.findByIdWithMajors(principal.getId()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         List<MajorInfo> majors = user.getUserMajors().stream()
+                .filter(userMajor -> userMajor.getStatus() == RegistrationStatus.APPROVED)
                 .map(userMajor -> MajorInfo.builder()
                         .id(userMajor.getMajor().getId())
                         .name(userMajor.getMajor().getName())
@@ -40,6 +42,7 @@ public class UserService {
                 .email(user.getEmail())
                 .studentId(user.getStudentId())
                 .type(user.getType())
+                .majors(majors)
                 .managingUnitIds(principal.getManagingUnitIds())
                 .build();
     }
@@ -54,6 +57,7 @@ public class UserService {
                 .type(user.getType())
                 .majors(
                         user.getUserMajors().stream()
+                                .filter(userMajor -> userMajor.getStatus() == RegistrationStatus.APPROVED)
                                 .map(userMajor -> MajorInfo.builder()
                                         .id(userMajor.getMajor().getId())
                                         .name(userMajor.getMajor().getName())
