@@ -71,6 +71,7 @@ public class AuthService {
                 .queryParam("response_type", "code")
                 .queryParam("scope", "openid email profile")
                 .queryParam("state", originUrl)
+                .encode()
                 .build()
                 .toUriString();
     }

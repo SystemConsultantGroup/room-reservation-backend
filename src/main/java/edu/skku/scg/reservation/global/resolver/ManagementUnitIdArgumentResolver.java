@@ -4,6 +4,7 @@ import edu.skku.scg.reservation.domain.organization.service.OriginService;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
 import edu.skku.scg.reservation.global.exception.BusinessException;
 import edu.skku.scg.reservation.global.exception.ErrorCode;
+import edu.skku.scg.reservation.global.util.HttpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -35,38 +36,8 @@ public class ManagementUnitIdArgumentResolver implements HandlerMethodArgumentRe
             NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 
         HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
-        String originUrl = request.getHeader(HttpHeaders.ORIGIN);
-
-        if (!StringUtils.hasText(originUrl)) {
-            String secFetchSite = request.getHeader("Sec-Fetch-Site");
-
-            if ("same-origin".equals(secFetchSite)) {
-                originUrl = reconstructOriginFromRequest(request);
-            } else {
-                throw new BusinessException(ErrorCode.UNREGISTERED_ORIGIN);
-            }
-        }
+        String originUrl = HttpUtils.extractOrigin(request);
 
         return originService.getManagementUnitId(originUrl);
-    }
-
-    private String reconstructOriginFromRequest(HttpServletRequest request) {
-        String scheme = request.getScheme();
-        String serverName = request.getServerName();
-        int port = request.getServerPort();
-
-        if (!StringUtils.hasText(scheme) || !StringUtils.hasText(serverName)) {
-            throw new BusinessException(ErrorCode.UNREGISTERED_ORIGIN);
-        }
-
-        StringBuilder originBuilder = new StringBuilder();
-        originBuilder.append(scheme).append("://").append(serverName);
-
-        if (("http".equals(scheme) && port != 80 && port != -1) ||
-                ("https".equals(scheme) && port != 443 && port != -1)) {
-            originBuilder.append(":").append(port);
-        }
-
-        return originBuilder.toString();
     }
 }
