@@ -5,9 +5,8 @@ import jakarta.validation.constraints.NotEmpty;
 
 import java.util.List;
 
-public record MajorApplicationRequestDto(
+public record MajorApplicationRequest(
         @NotEmpty
         @Valid
         List<MajorRequest> majors
-) {
-}
+) {}

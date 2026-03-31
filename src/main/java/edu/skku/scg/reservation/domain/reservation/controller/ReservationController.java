@@ -1,7 +1,7 @@
 package edu.skku.scg.reservation.domain.reservation.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequestDto;
+import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequest;
 import edu.skku.scg.reservation.domain.reservation.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +25,7 @@ public class ReservationController {
     @PostMapping
     public void createReservation(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @RequestBody CreateReservationRequestDto dto) {
+            @Valid @RequestBody CreateReservationRequest dto) {
 
         reservationService.reserveRoom(userPrincipal.getId(), dto);
     }

@@ -1,6 +1,6 @@
 package edu.skku.scg.reservation.domain.reservation.service;
 
-import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequestDto;
+import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequest;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.entity.Room;
@@ -32,7 +32,7 @@ public class ReservationService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void reserveRoom(Long userId, CreateReservationRequestDto dto) {
+    public void reserveRoom(Long userId, CreateReservationRequest dto) {
         User user = userRepository.findByIdWithMajors(userId).orElseThrow(
                 () -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         Room room = roomRepository.findByIdWithMajorsAndLock(dto.roomId()).orElseThrow(

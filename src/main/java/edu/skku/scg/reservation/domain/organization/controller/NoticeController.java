@@ -1,8 +1,8 @@
 package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.organization.dto.NoticeDetailDto;
-import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequestDto;
+import edu.skku.scg.reservation.domain.organization.dto.NoticeDetail;
+import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequest;
 import edu.skku.scg.reservation.domain.organization.service.NoticeService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
@@ -24,7 +24,7 @@ public class NoticeController {
     @Operation(summary = "공지 조회")
     @PublicApi
     @GetMapping
-    public NoticeDetailDto getNotice(@ManagementUnitId Long managementUnitId) {
+    public NoticeDetail getNotice(@ManagementUnitId Long managementUnitId) {
         return noticeService.getNotice(managementUnitId);
     }
 
@@ -34,7 +34,7 @@ public class NoticeController {
     public void updateNotice(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @ManagementUnitId Long managementUnitId,
-            @RequestBody UpdateNoticeRequestDto dto) {
+            @RequestBody UpdateNoticeRequest dto) {
 
         noticeService.updateNotice(managementUnitId, dto, userPrincipal.getManagingUnitIds());
     }

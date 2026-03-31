@@ -7,7 +7,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
-import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
+import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequest;
 import edu.skku.scg.reservation.domain.auth.jwt.JwtProvider;
 import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.domain.user.entity.User;
@@ -82,7 +82,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String completeOnboarding(Long userId, OnboardingRequestDto dto) {
+    public String completeOnboarding(Long userId, OnboardingRequest dto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         user.completeOnboarding(dto.userType(), dto.studentId());
 

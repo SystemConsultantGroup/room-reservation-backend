@@ -3,7 +3,7 @@ package edu.skku.scg.reservation.domain.room.dto;
 import lombok.Builder;
 
 @Builder
-public record RoomSummaryDto(
+public record RoomSummary(
         Long id,
         String name
 ) {

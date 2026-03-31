@@ -1,7 +1,7 @@
 package edu.skku.scg.reservation.domain.user.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.user.dto.UserDetailDto;
+import edu.skku.scg.reservation.domain.user.dto.UserDetail;
 import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.service.UserService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
@@ -25,7 +25,7 @@ public class UserController {
 
     @Operation(summary = "내 정보 조회")
     @GetMapping("/me")
-    public UserDetailDto getMe(@AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public UserDetail getMe(@AuthenticationPrincipal UserPrincipal userPrincipal) {
         return userService.getUserDetail(userPrincipal);
     }
 

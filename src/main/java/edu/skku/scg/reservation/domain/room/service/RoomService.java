@@ -1,9 +1,9 @@
 package edu.skku.scg.reservation.domain.room.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummaryDto;
+import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
-import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetailDto;
+import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.dto.*;
@@ -11,7 +11,7 @@ import edu.skku.scg.reservation.domain.room.entity.MajorRoom;
 import edu.skku.scg.reservation.domain.room.entity.Room;
 import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
-import edu.skku.scg.reservation.domain.user.dto.UserSummaryDto;
+import edu.skku.scg.reservation.domain.user.dto.UserSummary;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -40,7 +40,7 @@ public class RoomService {
     private final RoomAccessChecker roomAccessChecker;
 
     @Transactional
-    public void createRoom(RoomCreateRequestDto dto, List<Long> managingUnitIds) {
+    public void createRoom(RoomCreateRequest dto, List<Long> managingUnitIds) {
         validateMajorsOwnership(dto.majorIds(), managingUnitIds);
 
         Room room = Room.builder()
@@ -58,7 +58,7 @@ public class RoomService {
     }
 
     @Transactional
-    public void updateRoom(Long roomId, RoomUpdateRequestDto dto, List<Long> managingUnitIds) {
+    public void updateRoom(Long roomId, RoomUpdateRequest dto, List<Long> managingUnitIds) {
         Room room = roomRepository.findByIdWithMajors(roomId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
@@ -91,7 +91,7 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
-    public RoomResponseDto getRoom(Long roomId, Long userId) {
+    public RoomResponse getRoom(Long roomId, Long userId) {
         Room room = roomRepository.findByIdWithMajors(roomId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
@@ -100,18 +100,18 @@ public class RoomService {
         return convertToRoomDetailDto(room, user);
     }
 
-    public Page<RoomInfoDto> getRooms(List<Long> managingUnitIds, Pageable pageable) {
+    public Page<RoomInfo> getRooms(List<Long> managingUnitIds, Pageable pageable) {
         Page<Room> roomPage = roomRepository.findRoomsByManagementUnitIds(managingUnitIds, pageable);
 
         return roomPage.map(room -> {
-            List<MajorSummaryDto> majors = room.getMajorRooms().stream()
-                    .map(mr -> MajorSummaryDto.builder()
+            List<MajorSummary> majors = room.getMajorRooms().stream()
+                    .map(mr -> MajorSummary.builder()
                             .id(mr.getMajor().getId())
                             .name(mr.getMajor().getName())
                             .build()
                     ).toList();
 
-            return RoomInfoDto.builder()
+            return RoomInfo.builder()
                     .id(room.getId())
                     .name(room.getName())
                     .capacity(room.getCapacity())
@@ -123,21 +123,21 @@ public class RoomService {
         });
     }
 
-    public RoomSummaryListDto getRoomSummaries(Long managementUnitId) {
+    public RoomSummaryList getRoomSummaries(Long managementUnitId) {
         List<Room> rooms = roomRepository.findAllByManagementUnitId(managementUnitId);
 
-        List<RoomSummaryDto> dtos = rooms.stream().map(
-                room -> RoomSummaryDto.builder()
+        List<RoomSummary> dtos = rooms.stream().map(
+                room -> RoomSummary.builder()
                         .id(room.getId())
                         .name(room.getName())
                         .build()).toList();
 
-        return RoomSummaryListDto.builder()
+        return RoomSummaryList.builder()
                 .content(dtos)
                 .build();
     }
 
-    public Page<DailyRoomScheduleResponseDto> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
+    public Page<DailyRoomScheduleResponse> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
         Page<Room> roomPage = roomRepository.findRoomsByManagementUnitId(managementUnitId, pageable);
 
         if (roomPage.isEmpty()) {
@@ -156,20 +156,20 @@ public class RoomService {
         return roomPage.map(room -> {
             Long roomId = room.getId();
 
-            List<MajorSummaryDto> majors = room.getMajorRooms().stream()
-                    .map(majorRoom -> MajorSummaryDto.builder()
+            List<MajorSummary> majors = room.getMajorRooms().stream()
+                    .map(majorRoom -> MajorSummary.builder()
                             .id(majorRoom.getMajor().getId())
                             .name(majorRoom.getMajor().getName())
                             .build()
                     ).toList();
 
             List<Reservation> roomReservations = reservationMap.getOrDefault(roomId, List.of());
-            List<ReservationDetailDto> reservations = roomReservations.stream()
-                    .map(res -> ReservationDetailDto.builder()
+            List<ReservationDetail> reservations = roomReservations.stream()
+                    .map(res -> ReservationDetail.builder()
                             .id(res.getId())
                             .startTime(res.getStartTime())
                             .endTime(res.getEndTime())
-                            .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
+                            .user(new UserSummary(res.getUser().getId(), res.getUser().getName()))
                             .attendeeCount(res.getAttendeeCount())
                             .purpose(res.getPurpose())
                             .build()
@@ -180,7 +180,7 @@ public class RoomService {
                     .findFirst()
                     .orElse(null);
 
-            return DailyRoomScheduleResponseDto.builder()
+            return DailyRoomScheduleResponse.builder()
                     .id(room.getId())
                     .name(room.getName())
                     .capacity(room.getCapacity())
@@ -193,7 +193,7 @@ public class RoomService {
         });
     }
 
-    public WeeklyRoomScheduleResponseDto getWeeklyRoomSchedules(LocalDate date, Long roomId) {
+    public WeeklyRoomScheduleResponse getWeeklyRoomSchedules(LocalDate date, Long roomId) {
         if (!roomRepository.existsById(roomId)) {
             throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
         }
@@ -209,18 +209,18 @@ public class RoomService {
         List<Reservation> weeklyReservations = reservationRepository
                 .findReservationsByRoomIdAndDate(roomId, startDateTime, endDateTime);
 
-        List<ReservationDetailDto> reservationDtos = weeklyReservations.stream()
-                .map(res -> ReservationDetailDto.builder()
+        List<ReservationDetail> reservationDtos = weeklyReservations.stream()
+                .map(res -> ReservationDetail.builder()
                         .id(res.getId())
                         .startTime(res.getStartTime())
                         .endTime(res.getEndTime())
-                        .user(new UserSummaryDto(res.getUser().getId(), res.getUser().getName()))
+                        .user(new UserSummary(res.getUser().getId(), res.getUser().getName()))
                         .attendeeCount(res.getAttendeeCount())
                         .purpose(res.getPurpose())
                         .build()
                 ).toList();
 
-        return WeeklyRoomScheduleResponseDto.builder()
+        return WeeklyRoomScheduleResponse.builder()
                 .id(roomId)
                 .reservations(reservationDtos)
                 .build();
@@ -262,9 +262,9 @@ public class RoomService {
         }
     }
 
-    private void mapOperatingHoursToRoom(Room room, List<OperatingHoursDetailDto> dtos) {
+    private void mapOperatingHoursToRoom(Room room, List<OperatingHoursDetail> dtos) {
         long distinctCount = dtos.stream()
-                .map(OperatingHoursDetailDto::dayOfWeek)
+                .map(OperatingHoursDetail::dayOfWeek)
                 .distinct()
                 .count();
 
@@ -289,16 +289,16 @@ public class RoomService {
         room.getOperatingHours().addAll(operatingHours);
     }
 
-    private RoomResponseDto convertToRoomDetailDto(Room room, User user) {
-        List<MajorSummaryDto> majors = room.getMajorRooms().stream()
-                .map(majorRoom -> MajorSummaryDto.builder()
+    private RoomResponse convertToRoomDetailDto(Room room, User user) {
+        List<MajorSummary> majors = room.getMajorRooms().stream()
+                .map(majorRoom -> MajorSummary.builder()
                         .id(majorRoom.getMajor().getId())
                         .name(majorRoom.getMajor().getName())
                         .build()
                 ).toList();
 
-        List<OperatingHoursDetailDto> operatingHours = room.getOperatingHours().stream()
-                .map(operatingHour -> OperatingHoursDetailDto.builder()
+        List<OperatingHoursDetail> operatingHours = room.getOperatingHours().stream()
+                .map(operatingHour -> OperatingHoursDetail.builder()
                         .dayOfWeek(operatingHour.getDayOfWeek())
                         .openTime(operatingHour.getOpenTime())
                         .closeTime(operatingHour.getCloseTime())
@@ -307,7 +307,7 @@ public class RoomService {
 
         boolean canReserve = canUserReserveRoom(user, room);
 
-        return RoomResponseDto.builder()
+        return RoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
                 .capacity(room.getCapacity())

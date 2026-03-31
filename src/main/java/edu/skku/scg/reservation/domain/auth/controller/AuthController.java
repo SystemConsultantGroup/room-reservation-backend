@@ -2,7 +2,7 @@ package edu.skku.scg.reservation.domain.auth.controller;
 
 import edu.skku.scg.reservation.domain.auth.common.AuthConstants;
 import edu.skku.scg.reservation.domain.auth.dto.GoogleLoginResult;
-import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequestDto;
+import edu.skku.scg.reservation.domain.auth.dto.OnboardingRequest;
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.auth.service.AuthService;
 import edu.skku.scg.reservation.domain.organization.service.OriginService;
@@ -97,7 +97,7 @@ public class AuthController {
     @Operation(summary = "GUEST 유저 추가 정보 등록")
     @PatchMapping("/onboarding")
     public void onboarding(
-            @Valid @RequestBody OnboardingRequestDto dto,
+            @Valid @RequestBody OnboardingRequest dto,
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             HttpServletResponse response) {
         String accessToken = authService.completeOnboarding(userPrincipal.getId(), dto);

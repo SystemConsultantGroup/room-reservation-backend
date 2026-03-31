@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record RoomSummaryListDto(
-        List<RoomSummaryDto> content
+public record RoomSummaryList(
+        List<RoomSummary> content
 ) {
 }

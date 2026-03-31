@@ -8,5 +8,4 @@ public record MajorInfo (
     Long id,
     String name,
     MajorType type
-) {
-}
+) {}

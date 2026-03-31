@@ -1,8 +1,8 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetailDto;
+import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
 import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummaryDto;
+import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
 import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
@@ -119,27 +119,27 @@ public class MajorService {
         userMajor.reject();
     }
 
-    public List<MajorSummaryDto> getMajorSummaries(Long managementUnitId) {
+    public List<MajorSummary> getMajorSummaries(Long managementUnitId) {
         List<Major> majors = majorRepository.findAllByManagementUnitId(managementUnitId);
         return majors.stream()
-                .map(major -> MajorSummaryDto.builder()
+                .map(major -> MajorSummary.builder()
                         .id(major.getId())
                         .name(major.getName())
                         .build())
                 .toList();
     }
 
-    public List<MajorSummaryDto> getMajorSummaries(List<Long> managementUnitIds) {
+    public List<MajorSummary> getMajorSummaries(List<Long> managementUnitIds) {
         List<Major> majors = majorRepository.findAllByManagementUnitIdIn(managementUnitIds);
         return majors.stream()
-                .map(major -> MajorSummaryDto.builder()
+                .map(major -> MajorSummary.builder()
                         .id(major.getId())
                         .name(major.getName())
                         .build())
                 .toList();
     }
 
-    public Page<MajorApplicationDetailDto> getApplications(
+    public Page<MajorApplicationDetail> getApplications(
             List<Long> managingUnitIds,
             Pageable pageable,
             String keyword) {
@@ -175,12 +175,12 @@ public class MajorService {
                     .majors(approvedMajors)
                     .build();
 
-            List<MajorApplicationDetailDto.MajorApplication> pendingApplications = user.getUserMajors().stream()
+            List<MajorApplicationDetail.MajorApplication> pendingApplications = user.getUserMajors().stream()
                     .filter(um -> um.getStatus() == RegistrationStatus.PENDING)
                     .filter(um -> managingUnitIds.contains(um.getMajor().getManagementUnit().getId()))
-                    .map(um -> MajorApplicationDetailDto.MajorApplication.builder()
+                    .map(um -> MajorApplicationDetail.MajorApplication.builder()
                             .id(um.getId())
-                            .major(MajorSummaryDto.builder()
+                            .major(MajorSummary.builder()
                                     .id(um.getMajor().getId())
                                     .name(um.getMajor().getName())
                                     .build())
@@ -188,7 +188,7 @@ public class MajorService {
                             .build())
                     .toList();
 
-            return new MajorApplicationDetailDto(userInfo, pendingApplications);
+            return new MajorApplicationDetail(userInfo, pendingApplications);
         });
     }
 

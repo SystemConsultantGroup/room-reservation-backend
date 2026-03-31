@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record OnboardingRequestDto(
+public record OnboardingRequest(
         @NotNull
         String name,
 
@@ -19,5 +19,4 @@ public record OnboardingRequestDto(
         @NotNull
         @Valid
         List<MajorRequest> majors
-) {
-}
+) {}
