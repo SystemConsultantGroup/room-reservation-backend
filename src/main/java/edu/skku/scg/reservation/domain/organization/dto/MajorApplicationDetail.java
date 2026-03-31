@@ -7,15 +7,14 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record MajorApplicationDetailDto (
+public record MajorApplicationDetail(
         UserInfo user,
         List<MajorApplication> applications
 ) {
     @Builder
     public record MajorApplication(
             Long id,
-            MajorSummaryDto major,
+            MajorSummary major,
             MajorType type
-    ) {
-    }
+    ) {}
 }

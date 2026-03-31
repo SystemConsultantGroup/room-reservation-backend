@@ -7,7 +7,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Builder
-public record OperatingHoursDetailDto(
+public record OperatingHoursDetail(
         @NotNull
         DayOfWeek dayOfWeek,
 

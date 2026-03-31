@@ -1,7 +1,7 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.NoticeDetailDto;
-import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequestDto;
+import edu.skku.scg.reservation.domain.organization.dto.NoticeDetail;
+import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequest;
 import edu.skku.scg.reservation.domain.organization.entity.ManagementUnit;
 import edu.skku.scg.reservation.domain.organization.repository.ManagementUnitRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -20,10 +20,10 @@ public class NoticeService {
 
     private final ManagementUnitRepository managementUnitRepository;
 
-    public NoticeDetailDto getNotice(Long managementUnitId) {
+    public NoticeDetail getNotice(Long managementUnitId) {
         ManagementUnit managementUnit = getManagementUnit(managementUnitId);
 
-        return NoticeDetailDto.builder()
+        return NoticeDetail.builder()
                 .title(managementUnit.getNoticeTitle())
                 .content(managementUnit.getNoticeContent())
                 .build();
@@ -32,7 +32,7 @@ public class NoticeService {
     @Transactional
     public void updateNotice(
             Long managementUnitId,
-            UpdateNoticeRequestDto dto,
+            UpdateNoticeRequest dto,
             List<Long> managingUnitIds) {
 
         if (!managingUnitIds.contains(managementUnitId)) {

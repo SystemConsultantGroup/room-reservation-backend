@@ -1,9 +1,9 @@
 package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetailDto;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationRequestDto;
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummaryDto;
+import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
+import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationRequest;
+import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
 import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
@@ -33,7 +33,7 @@ public class MajorController {
     @PostMapping("/apply")
     public void applyMajor(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid  @RequestBody MajorApplicationRequestDto dto) {
+            @Valid  @RequestBody MajorApplicationRequest dto) {
 
         majorService.applyMajor(userPrincipal.getId(), dto.majors());
     }
@@ -41,7 +41,7 @@ public class MajorController {
     @Operation(summary = "전공 등록 신청 목록 조회")
     @AdminApi
     @GetMapping("/applications")
-    public PageResponse<MajorApplicationDetailDto> getApplications(
+    public PageResponse<MajorApplicationDetail> getApplications(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -75,7 +75,7 @@ public class MajorController {
     @Operation(summary = "전공 목록 조회")
     @PublicApi
     @GetMapping
-    public List<MajorSummaryDto> getMajors(
+    public List<MajorSummary> getMajors(
             @ManagementUnitId Long managementUnitId) {
 
         return majorService.getMajorSummaries(managementUnitId);
@@ -84,7 +84,7 @@ public class MajorController {
     @Operation(summary = "관리 권한이 있는 전공 목록 조회")
     @AdminApi
     @GetMapping("/managed")
-    public List<MajorSummaryDto> getManagedMajors(
+    public List<MajorSummary> getManagedMajors(
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
         return majorService.getMajorSummaries(userPrincipal.getManagingUnitIds());

@@ -34,7 +34,7 @@ public class RoomController {
     @PostMapping
     public void createRoom(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid @RequestBody RoomCreateRequestDto dto) {
+            @Valid @RequestBody RoomCreateRequest dto) {
 
         roomService.createRoom(dto, userPrincipal.getManagingUnitIds());
     }
@@ -42,7 +42,7 @@ public class RoomController {
     @Operation(summary = "공간 상세 조회")
     @PublicApi
     @GetMapping("/{roomId}")
-    public RoomResponseDto getRoom(
+    public RoomResponse getRoom(
             @PathVariable Long roomId,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return roomService.getRoom(roomId, userPrincipal == null ? null : userPrincipal.getId());
@@ -54,7 +54,7 @@ public class RoomController {
     public void updateRoom(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long roomId,
-            @Valid @RequestBody RoomUpdateRequestDto dto) {
+            @Valid @RequestBody RoomUpdateRequest dto) {
         roomService.updateRoom(
                 roomId,
                 dto,
@@ -74,7 +74,7 @@ public class RoomController {
     @Operation(summary = "특정 날짜의 공간 스케줄 목록 조회")
     @PublicApi
     @GetMapping("/schedules")
-    public PageResponse<DailyRoomScheduleResponseDto> getDailyRoomSchedules(
+    public PageResponse<DailyRoomScheduleResponse> getDailyRoomSchedules(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -82,7 +82,7 @@ public class RoomController {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
 
-        Page<DailyRoomScheduleResponseDto> rooms = roomService.getDailyRoomSchedules(managementUnitId, date, pageable);
+        Page<DailyRoomScheduleResponse> rooms = roomService.getDailyRoomSchedules(managementUnitId, date, pageable);
 
         return PageResponse.of(rooms);
     }
@@ -90,7 +90,7 @@ public class RoomController {
     @Operation(summary = "특정 주차의 공간 스케줄 목록 조회")
     @PublicApi
     @GetMapping("{roomId}/schedules")
-    public WeeklyRoomScheduleResponseDto getWeeklyRoomSchedules(
+    public WeeklyRoomScheduleResponse getWeeklyRoomSchedules(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @PathVariable Long roomId) {
         return roomService.getWeeklyRoomSchedules(date, roomId);
@@ -99,14 +99,14 @@ public class RoomController {
     @Operation(summary = "공간 목록 조회")
     @AdminApi
     @GetMapping
-    public PageResponse<RoomInfoDto> getRooms(
+    public PageResponse<RoomInfo> getRooms(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
 
-        Page<RoomInfoDto> rooms = roomService.getRooms(userPrincipal.getManagingUnitIds(), pageable);
+        Page<RoomInfo> rooms = roomService.getRooms(userPrincipal.getManagingUnitIds(), pageable);
 
         return PageResponse.of(rooms);
     }
@@ -114,7 +114,7 @@ public class RoomController {
     @Operation(summary = "공간 목록 요약 조회")
     @PublicApi
     @GetMapping("/summary")
-    public RoomSummaryListDto getRoomSummaries(
+    public RoomSummaryList getRoomSummaries(
             @ManagementUnitId Long managementUnitId) {
 
         return roomService.getRoomSummaries(managementUnitId);

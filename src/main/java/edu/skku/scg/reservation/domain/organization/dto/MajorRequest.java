@@ -7,5 +7,4 @@ public record MajorRequest(
         @NotNull
         Long id,
         MajorType type
-) {
-}
+) {}

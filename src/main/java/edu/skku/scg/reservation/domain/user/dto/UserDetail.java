@@ -6,7 +6,7 @@
     import java.util.List;
 
     @Builder
-    public record UserDetailDto(
+    public record UserDetail(
             Long id,
             String email,
             String name,

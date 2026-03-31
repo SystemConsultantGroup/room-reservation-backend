@@ -8,7 +8,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record CreateReservationRequestDto (
+public record CreateReservationRequest(
         @NotNull
         Long roomId,
 
@@ -24,5 +24,4 @@ public record CreateReservationRequestDto (
 
         @NotBlank
         String purpose
-) {
-}
+) {}

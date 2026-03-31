@@ -3,8 +3,7 @@ package edu.skku.scg.reservation.domain.organization.dto;
 import lombok.Builder;
 
 @Builder
-public record UpdateNoticeRequestDto(
+public record UpdateNoticeRequest(
         String title,
         String content
-) {
-}
+) {}

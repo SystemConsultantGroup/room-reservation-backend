@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.util.List;
 
-public record RoomUpdateRequestDto(
+public record RoomCreateRequest(
         @NotBlank
         String name,
 
@@ -28,5 +28,5 @@ public record RoomUpdateRequestDto(
 
         @NotEmpty
         @Valid
-        List<OperatingHoursDetailDto> operatingHours
+        List<OperatingHoursDetail> operatingHours
 ) {}

@@ -2,7 +2,7 @@ package edu.skku.scg.reservation.domain.user.service;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
-import edu.skku.scg.reservation.domain.user.dto.UserDetailDto;
+import edu.skku.scg.reservation.domain.user.dto.UserDetail;
 import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
 import edu.skku.scg.reservation.domain.user.entity.User;
@@ -24,7 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserDetailDto getUserDetail(UserPrincipal principal) {
+    public UserDetail getUserDetail(UserPrincipal principal) {
         User user = userRepository.findByIdWithMajors(principal.getId()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         List<MajorInfo> majors = user.getUserMajors().stream()
@@ -36,7 +36,7 @@ public class UserService {
                         .build()
                 ).toList();
 
-        return UserDetailDto.builder()
+        return UserDetail.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
