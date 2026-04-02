@@ -84,7 +84,7 @@ public class AuthService {
     @Transactional
     public String completeOnboarding(Long userId, OnboardingRequest dto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        user.completeOnboarding(dto.userType(), dto.studentId());
+        user.completeOnboarding(dto.name(), dto.userType(), dto.studentId());
 
         majorService.applyMajor(user.getId(), dto.majors());
 
