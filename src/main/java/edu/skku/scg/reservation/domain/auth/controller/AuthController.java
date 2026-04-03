@@ -86,7 +86,7 @@ public class AuthController {
         UriComponentsBuilder targetUrlBuilder = UriComponentsBuilder.fromUriString(originUrl);
 
         if (loginResult.isGuest()) {
-            targetUrlBuilder.queryParam("isGuest", "true");
+            targetUrlBuilder.replacePath("/onboarding");
         }
 
         return ResponseEntity.status(HttpStatus.FOUND)
