@@ -2,6 +2,7 @@ package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
+import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationList;
 import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationRequest;
 import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
 import edu.skku.scg.reservation.domain.organization.service.MajorService;
@@ -50,6 +51,14 @@ public class MajorController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
 
         return PageResponse.of(majorService.getApplications(userPrincipal.getManagingUnitIds(), pageable, keyword));
+    }
+
+    @Operation(summary = "나의 전공 등록 신청 현황 조회")
+    @GetMapping("/applications/me")
+    public MajorApplicationList getMyApplications(
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        return majorService.getApplications(userPrincipal.getId());
     }
 
     @Operation(summary = "전공 등록 신청 승인")

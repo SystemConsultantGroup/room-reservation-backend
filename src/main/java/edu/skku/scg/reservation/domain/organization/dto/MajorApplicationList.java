@@ -1,12 +1,10 @@
 package edu.skku.scg.reservation.domain.organization.dto;
 
-import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import lombok.Builder;
 
 import java.util.List;
 
 @Builder
-public record MajorApplicationDetail(
-        UserInfo user,
+public record MajorApplicationList(
         List<MajorApplication> applications
 ) {}

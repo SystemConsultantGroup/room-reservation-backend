@@ -1,8 +1,6 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
-import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
+import edu.skku.scg.reservation.domain.organization.dto.*;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
 import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
@@ -175,16 +173,18 @@ public class MajorService {
                     .majors(approvedMajors)
                     .build();
 
-            List<MajorApplicationDetail.MajorApplication> pendingApplications = user.getUserMajors().stream()
+            List<MajorApplication> pendingApplications = user.getUserMajors().stream()
                     .filter(um -> um.getStatus() == RegistrationStatus.PENDING)
                     .filter(um -> managingUnitIds.contains(um.getMajor().getManagementUnit().getId()))
-                    .map(um -> MajorApplicationDetail.MajorApplication.builder()
+                    .map(um -> MajorApplication.builder()
                             .id(um.getId())
                             .major(MajorSummary.builder()
                                     .id(um.getMajor().getId())
                                     .name(um.getMajor().getName())
                                     .build())
                             .type(um.getType())
+                            .status(um.getStatus())
+                            .createdAt(um.getCreatedAt())
                             .build())
                     .toList();
 
@@ -192,6 +192,28 @@ public class MajorService {
         });
     }
 
+    public MajorApplicationList getApplications(Long userId) {
+        User user = userRepository.findByIdWithMajors(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        List<MajorApplication> applications = user.getUserMajors().stream()
+                .filter(um -> um.getStatus() != RegistrationStatus.APPROVED)
+                .map(um -> MajorApplication.builder()
+                        .id(um.getId())
+                        .major(MajorSummary.builder()
+                                .id(um.getMajor().getId())
+                                .name(um.getMajor().getName())
+                                .build())
+                        .type(um.getType())
+                        .status(um.getStatus())
+                        .createdAt(um.getCreatedAt())
+                        .build())
+                .toList();
+
+        return MajorApplicationList.builder()
+                .applications(applications)
+                .build();
+    }
     private UserMajor getUserMajor(Long userMajorId) {
         return userMajorRepository.findById(userMajorId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_MAJOR_NOT_FOUND));
