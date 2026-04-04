@@ -3,7 +3,6 @@ package edu.skku.scg.reservation.domain.organization.service;
 import edu.skku.scg.reservation.domain.organization.dto.*;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
-import edu.skku.scg.reservation.domain.organization.repository.ManagementUnitRepository;
 import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
 import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.entity.*;
@@ -32,7 +31,6 @@ public class MajorService {
     private final MajorRepository majorRepository;
     private final UserMajorRepository userMajorRepository;
     private final UserRepository userRepository;
-    private final ManagementUnitRepository managementUnitRepository;
 
     @Transactional
     public void applyMajor(Long userId, List<MajorRequest> majorRequests) {
@@ -215,12 +213,6 @@ public class MajorService {
         return MajorApplicationList.builder()
                 .applications(applications)
                 .build();
-    }
-
-    public String getApprovalMethod(Long managementUnitId) {
-        return managementUnitRepository.findById(managementUnitId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MANAGEMENT_UNIT_NOT_FOUND))
-                .getApprovalMethod();
     }
 
     private UserMajor getUserMajor(Long userMajorId) {

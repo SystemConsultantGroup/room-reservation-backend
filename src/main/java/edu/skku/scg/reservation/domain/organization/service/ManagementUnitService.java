@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
+import edu.skku.scg.reservation.domain.organization.dto.ManagementUnitDetail;
 import edu.skku.scg.reservation.domain.organization.dto.NoticeDetail;
 import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequest;
 import edu.skku.scg.reservation.domain.organization.entity.ManagementUnit;
@@ -16,16 +17,18 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class NoticeService {
+public class ManagementUnitService {
 
     private final ManagementUnitRepository managementUnitRepository;
 
-    public NoticeDetail getNotice(Long managementUnitId) {
-        ManagementUnit managementUnit = getManagementUnit(managementUnitId);
-
-        return NoticeDetail.builder()
-                .title(managementUnit.getNoticeTitle())
-                .content(managementUnit.getNoticeContent())
+    public ManagementUnitDetail getManagementUnit(Long managementUnitId) {
+        ManagementUnit managementUnit = getManagementUnitOrThrow(managementUnitId);
+        return ManagementUnitDetail.builder()
+                .id(managementUnit.getId())
+                .name(managementUnit.getName())
+                .approvalMethod(managementUnit.getApprovalMethod())
+                .noticeTitle(managementUnit.getNoticeTitle())
+                .noticeContent(managementUnit.getNoticeContent())
                 .build();
     }
 
@@ -39,11 +42,11 @@ public class NoticeService {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
 
-        ManagementUnit managementUnit = getManagementUnit(managementUnitId);
+        ManagementUnit managementUnit = getManagementUnitOrThrow(managementUnitId);
         managementUnit.updateNotice(dto.title(), dto.content());
     }
 
-    private @NonNull ManagementUnit getManagementUnit(Long managementUnitId) {
+    private ManagementUnit getManagementUnitOrThrow(Long managementUnitId) {
         return managementUnitRepository.findById(managementUnitId).orElseThrow(
                 () -> new BusinessException(ErrorCode.MANAGEMENT_UNIT_NOT_FOUND)
         );

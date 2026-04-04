@@ -27,15 +27,6 @@ public class MajorController {
 
     private final MajorService majorService;
 
-    @Operation(summary = "전공 등록 방법 조회")
-    @PublicApi
-    @GetMapping("/approvalMethod")
-    public ApprovalMethodResponse getApprovalMethod(@ManagementUnitId Long managementUnitId) {
-        return ApprovalMethodResponse.builder()
-                .approvalMethod(majorService.getApprovalMethod(managementUnitId))
-                .build();
-    }
-
     @Operation(summary = "전공 추가 등록 신청")
     @PostMapping("/apply")
     public void applyMajor(
