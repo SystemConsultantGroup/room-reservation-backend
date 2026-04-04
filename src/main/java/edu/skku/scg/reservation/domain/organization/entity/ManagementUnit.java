@@ -23,12 +23,8 @@ public class ManagementUnit extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String noticeContent;
 
-    @Builder
-    public ManagementUnit(String name, String noticeTitle, String noticeContent) {
-        this.name = name;
-        this.noticeTitle = noticeTitle;
-        this.noticeContent = noticeContent;
-    }
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String approvalMethod;
 
     public void updateNotice(String title, String content) {
         this.noticeTitle = title;

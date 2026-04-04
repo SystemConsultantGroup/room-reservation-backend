@@ -1,10 +1,7 @@
 package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationList;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationRequest;
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
+import edu.skku.scg.reservation.domain.organization.dto.*;
 import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
@@ -30,11 +27,20 @@ public class MajorController {
 
     private final MajorService majorService;
 
+    @Operation(summary = "전공 등록 방법 조회")
+    @PublicApi
+    @GetMapping("/approvalMethod")
+    public ApprovalMethodResponse getApprovalMethod(@ManagementUnitId Long managementUnitId) {
+        return ApprovalMethodResponse.builder()
+                .approvalMethod(majorService.getApprovalMethod(managementUnitId))
+                .build();
+    }
+
     @Operation(summary = "전공 추가 등록 신청")
     @PostMapping("/apply")
     public void applyMajor(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @Valid  @RequestBody MajorApplicationRequest dto) {
+            @Valid @RequestBody MajorApplicationRequest dto) {
 
         majorService.applyMajor(userPrincipal.getId(), dto.majors());
     }
