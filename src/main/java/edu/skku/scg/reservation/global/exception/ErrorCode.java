@@ -32,6 +32,7 @@ public enum ErrorCode {
 
     INVALID_TIME_RANGE(BAD_REQUEST, "TIME-001", "시작 시간이 종료 시간보다 늦습니다."),
     DATE_MISMATCH(BAD_REQUEST, "TIME-002", "시작 날짜와 종료 날짜가 일치하지 않습니다."),
+    PAST_TIME_NOT_ALLOWED(BAD_REQUEST, "TIME-003", "현재 시간 이전으로는 예약할 수 없습니다."),
 
     MAJOR_ALREADY_APPLIED(BAD_REQUEST, "MAJOR-001", "이미 신청한 전공입니다."),
     USER_MAJOR_NOT_FOUND(NOT_FOUND, "MAJOR-002", "전공 신청 정보가 존재하지 않습니다."),

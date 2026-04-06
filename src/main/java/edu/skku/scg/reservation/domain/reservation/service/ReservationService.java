@@ -63,6 +63,10 @@ public class ReservationService {
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.PAST_TIME_NOT_ALLOWED);
+        }
+
         if (!startTime.isBefore(endTime)) {
             throw new BusinessException(ErrorCode.INVALID_TIME_RANGE);
         }
