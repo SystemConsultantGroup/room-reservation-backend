@@ -45,10 +45,12 @@ public class RoomService {
 
         Room room = Room.builder()
                 .name(dto.name())
-                .capacity(dto.capacity())
+                .minAttendeeCount(dto.minAttendeeCount())
+                .maxAttendeeCount(dto.maxAttendeeCount())
                 .roomNumber(dto.roomNumber())
                 .accessPolicy(dto.accessPolicy())
-                .maxBookingMinutes(dto.maxBookingMinutes())
+                .minUsageMinutes(dto.minUsageMinutes())
+                .maxUsageMinutes(dto.maxUsageMinutes())
                 .build();
 
         mapMajorsToRoom(room, dto.majorIds());
@@ -69,7 +71,7 @@ public class RoomService {
         validateMajorsOwnership(currentMajorIds, managingUnitIds);
         validateMajorsOwnership(dto.majorIds(), managingUnitIds);
 
-        room.update(dto.name(), dto.capacity(), dto.roomNumber(), dto.accessPolicy(), dto.maxBookingMinutes());
+        room.update(dto);
 
         room.getMajorRooms().clear();
         mapMajorsToRoom(room, dto.majorIds());
@@ -91,13 +93,11 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
-    public RoomResponse getRoom(Long roomId, Long userId) {
+    public RoomResponse getRoom(Long roomId) {
         Room room = roomRepository.findByIdWithMajors(roomId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
-        User user = userId == null ? null : userRepository.findByIdWithMajors(userId).orElse(null);
-
-        return convertToRoomResponse(room, user);
+        return convertToRoomResponse(room);
     }
 
     public Page<RoomInfo> getRooms(List<Long> managingUnitIds, Pageable pageable) {
@@ -114,10 +114,12 @@ public class RoomService {
             return RoomInfo.builder()
                     .id(room.getId())
                     .name(room.getName())
-                    .capacity(room.getCapacity())
+                    .minAttendeeCount(room.getMinAttendeeCount())
+                    .maxAttendeeCount(room.getMaxAttendeeCount())
                     .roomNumber(room.getRoomNumber())
                     .accessPolicy(room.getAccessPolicy())
-                    .maxBookingMinutes(room.getMaxBookingMinutes())
+                    .minUsageMinutes(room.getMinUsageMinutes())
+                    .maxUsageMinutes(room.getMaxUsageMinutes())
                     .majors(majors)
                     .build();
         });
@@ -160,13 +162,6 @@ public class RoomService {
         return roomPage.map(room -> {
             Long roomId = room.getId();
 
-            List<MajorSummary> majors = room.getMajorRooms().stream()
-                    .map(majorRoom -> MajorSummary.builder()
-                            .id(majorRoom.getMajor().getId())
-                            .name(majorRoom.getMajor().getName())
-                            .build()
-                    ).toList();
-
             List<Reservation> roomReservations = reservationMap.getOrDefault(roomId, List.of());
             List<ReservationDetail> reservations = roomReservations.stream()
                     .map(res -> ReservationDetail.builder()
@@ -187,11 +182,9 @@ public class RoomService {
             return DailyRoomScheduleResponse.builder()
                     .id(room.getId())
                     .name(room.getName())
-                    .capacity(room.getCapacity())
-                    .accessPolicy(room.getAccessPolicy())
+                    .roomNumber(room.getRoomNumber())
                     .openTime(todayHour != null ? todayHour.getOpenTime() : null)
                     .closeTime(todayHour != null ? todayHour.getCloseTime() : null)
-                    .majors(majors)
                     .reservations(reservations)
                     .build();
         });
@@ -293,7 +286,7 @@ public class RoomService {
         room.getOperatingHours().addAll(operatingHours);
     }
 
-    private RoomResponse convertToRoomResponse(Room room, User user) {
+    private RoomResponse convertToRoomResponse(Room room) {
         List<MajorSummary> majors = room.getMajorRooms().stream()
                 .map(majorRoom -> MajorSummary.builder()
                         .id(majorRoom.getMajor().getId())
@@ -312,10 +305,12 @@ public class RoomService {
         return RoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
-                .capacity(room.getCapacity())
+                .minAttendeeCount(room.getMinAttendeeCount())
+                .maxAttendeeCount(room.getMaxAttendeeCount())
                 .roomNumber(room.getRoomNumber())
                 .accessPolicy(room.getAccessPolicy())
-                .maxBookingMinutes(room.getMaxBookingMinutes())
+                .minUsageMinutes(room.getMinUsageMinutes())
+                .maxUsageMinutes(room.getMaxUsageMinutes())
                 .majors(majors)
                 .operatingHours(operatingHours)
                 .build();

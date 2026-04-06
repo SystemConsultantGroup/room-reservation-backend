@@ -10,10 +10,12 @@ import java.util.List;
 public record RoomResponse(
         Long id,
         String name,
-        Integer capacity,
+        Integer minAttendeeCount,
+        Integer maxAttendeeCount,
         String roomNumber,
         RoomAccessPolicy accessPolicy,
-        Integer maxBookingMinutes,
+        Integer minUsageMinutes,
+        Integer maxUsageMinutes,
         List<MajorSummary> majors,
         List<OperatingHoursDetail> operatingHours
 ) {}

@@ -47,7 +47,8 @@ public class ReservationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_AVAILABLE_TIME));
 
         validateOperatingHours(dto.startTime(), dto.endTime(), roomOperatingHour);
-        validateMaxBookingTime(dto.startTime(), dto.endTime(), room.getMaxBookingMinutes());
+        validateUsageTime(dto.startTime(), dto.endTime(), room.getMinUsageMinutes(), room.getMaxUsageMinutes());
+        validateAttendeeCount(dto.attendeeCount(), room.getMinAttendeeCount(), room.getMaxAttendeeCount());
         validateReservationConflict(dto.startTime(), dto.endTime(), room.getId());
 
         Reservation reservation = Reservation.builder()
@@ -85,12 +86,25 @@ public class ReservationService {
         }
     }
 
-    private void validateMaxBookingTime(LocalDateTime startTime, LocalDateTime endTime, Integer maxBookingMinutes) {
-        if (maxBookingMinutes == null) return;
-
+    private void validateUsageTime(LocalDateTime startTime, LocalDateTime endTime, Integer minUsageMinutes, Integer maxUsageMinutes) {
         long requestedMinutes = Duration.between(startTime, endTime).toMinutes();
-        if (requestedMinutes > maxBookingMinutes) {
-            throw new BusinessException(ErrorCode.EXCEED_MAX_BOOKING_TIME);
+
+        if (requestedMinutes > maxUsageMinutes) {
+            throw new BusinessException(ErrorCode.EXCEED_MAX_USAGE_TIME);
+        }
+
+        if (requestedMinutes < minUsageMinutes) {
+            throw new BusinessException(ErrorCode.UNDER_MIN_USAGE_TIME);
+        }
+    }
+
+    private void validateAttendeeCount(Integer attendeeCount, Integer minAttendeeCount, Integer maxAttendeeCount) {
+        if (attendeeCount < minAttendeeCount) {
+            throw new BusinessException(ErrorCode.UNDER_MIN_ATTENDEE_COUNT);
+        }
+
+        if (attendeeCount > maxAttendeeCount) {
+            throw new BusinessException(ErrorCode.EXCEED_MAX_ATTENDEE_COUNT);
         }
     }
 
