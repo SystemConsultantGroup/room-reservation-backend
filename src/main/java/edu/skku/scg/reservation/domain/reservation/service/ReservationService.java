@@ -1,6 +1,8 @@
 package edu.skku.scg.reservation.domain.reservation.service;
 
 import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequest;
+import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
+import edu.skku.scg.reservation.domain.reservation.dto.ReservationList;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.entity.Room;
@@ -8,6 +10,7 @@ import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import edu.skku.scg.reservation.domain.room.repository.RoomOperatingHourRepository;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
 import edu.skku.scg.reservation.domain.room.service.RoomAccessChecker;
+import edu.skku.scg.reservation.domain.user.dto.UserSummary;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +65,42 @@ public class ReservationService {
                 .build();
 
         reservationRepository.save(reservation);
+    }
+
+    public ReservationList getMyReservations(Long userId, LocalDateTime standardTime) {
+        List<Reservation> reservations = reservationRepository
+                .findReservationsByUserIdAndTimeAfter(userId, standardTime);
+
+        List<ReservationDetail> details = reservations.stream()
+                .map(r -> ReservationDetail.builder()
+                        .id(r.getId())
+                        .user(new UserSummary(r.getUser().getId(), r.getUser().getName()))
+                        .startTime(r.getStartTime())
+                        .endTime(r.getEndTime())
+                        .attendeeCount(r.getAttendeeCount())
+                        .purpose(r.getPurpose())
+                        .build())
+                .toList();
+
+        return ReservationList.builder()
+                .reservations(details)
+                .build();
+    }
+
+    @Transactional
+    public void deleteReservation(Long userId, Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (reservation.getEndTime().isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.CANNOT_CANCEL_PAST_RESERVATION);
+        }
+
+        reservationRepository.delete(reservation);
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {

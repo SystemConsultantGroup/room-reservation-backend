@@ -24,13 +24,16 @@ public enum ErrorCode {
     INVALID_FACULTY_MAJOR_TYPE(BAD_REQUEST, "USER-006", "교직원은 전공 유형을 입력할 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "USER-404", "존재하지 않는 사용자입니다."),
 
-    NOT_AVAILABLE_TIME(BAD_REQUEST, "ROOM-001", "예약 가능한 시간이 아닙니다."),
-    EXCEED_MAX_USAGE_TIME(BAD_REQUEST, "ROOM-002", "최대 예약 시간을 초과했습니다."),
-    DUPLICATE_DAY_OF_WEEK(BAD_REQUEST, "ROOM-003", "중복된 요일의 운영 시간이 존재합니다."),
-    INVALID_TIME_ORDER(BAD_REQUEST, "ROOM-004", "운영 시작 시간이 운영 종료 시간보다 빨라야 합니다."),
-    UNDER_MIN_USAGE_TIME(BAD_REQUEST, "ROOM-005", "최소 예약 시간을 충족해야 합니다."),
-    UNDER_MIN_ATTENDEE_COUNT(BAD_REQUEST, "ROOM-006", "최소 이용 인원을 충족해야 합니다."),
-    EXCEED_MAX_ATTENDEE_COUNT(BAD_REQUEST, "ROOM-007", "최대 수용 인원을 초과했습니다."),
+    NOT_AVAILABLE_TIME(BAD_REQUEST, "RESERVE-001", "예약 가능한 시간이 아닙니다."),
+    EXCEED_MAX_USAGE_TIME(BAD_REQUEST, "RESERVE-002", "최대 예약 시간을 초과했습니다."),
+    UNDER_MIN_USAGE_TIME(BAD_REQUEST, "RESERVE-003", "최소 예약 시간을 충족해야 합니다."),
+    UNDER_MIN_ATTENDEE_COUNT(BAD_REQUEST, "RESERVE-004", "최소 이용 인원을 충족해야 합니다."),
+    EXCEED_MAX_ATTENDEE_COUNT(BAD_REQUEST, "RESERVE-005", "최대 수용 인원을 초과했습니다."),
+    CANNOT_CANCEL_PAST_RESERVATION(BAD_REQUEST, "RESERVE-006", "이미 지난 예약은 취소할 수 없습니다."),
+    RESERVATION_NOT_FOUND(BAD_REQUEST, "RESERVE-404", "존재하지 않는 예약입니다."),
+
+    DUPLICATE_DAY_OF_WEEK(BAD_REQUEST, "ROOM-001", "중복된 요일의 운영 시간이 존재합니다."),
+    INVALID_TIME_ORDER(BAD_REQUEST, "ROOM-002", "운영 시작 시간이 운영 종료 시간보다 빨라야 합니다."),
     ROOM_NOT_FOUND(NOT_FOUND, "ROOM-404", "존재하지 않는 공간입니다."),
 
     INVALID_TIME_RANGE(BAD_REQUEST, "TIME-001", "시작 시간이 종료 시간보다 늦습니다."),
