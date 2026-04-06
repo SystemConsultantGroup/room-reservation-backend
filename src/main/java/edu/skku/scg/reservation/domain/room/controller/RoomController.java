@@ -115,8 +115,11 @@ public class RoomController {
     @PublicApi
     @GetMapping("/summary")
     public RoomSummaryList getRoomSummaries(
-            @ManagementUnitId Long managementUnitId) {
+            @ManagementUnitId Long managementUnitId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
-        return roomService.getRoomSummaries(managementUnitId);
+        Long userId = userPrincipal == null ? null : userPrincipal.getId();
+
+        return roomService.getRoomSummaries(managementUnitId, userId);
     }
 }

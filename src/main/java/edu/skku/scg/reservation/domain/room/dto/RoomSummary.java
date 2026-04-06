@@ -5,6 +5,6 @@ import lombok.Builder;
 @Builder
 public record RoomSummary(
         Long id,
-        String name
-) {
-}
+        String name,
+        Boolean canReserve
+) {}

@@ -14,7 +14,6 @@ public record RoomResponse(
         String roomNumber,
         RoomAccessPolicy accessPolicy,
         Integer maxBookingMinutes,
-        Boolean canReserve,
         List<MajorSummary> majors,
         List<OperatingHoursDetail> operatingHours
 ) {}

@@ -6,6 +6,6 @@ import java.util.List;
 
 @Builder
 public record RoomSummaryList(
-        List<RoomSummary> content
+        List<RoomSummary> rooms
 ) {
 }

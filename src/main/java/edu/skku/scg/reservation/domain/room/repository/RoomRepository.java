@@ -40,6 +40,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("SELECT DISTINCT r FROM Room r " +
             "LEFT JOIN FETCH r.majorRooms mr " +
+            "LEFT JOIN FETCH mr.major m " +
+            "WHERE m.managementUnit.id = :managementUnitId " +
+            "ORDER BY r.id ASC")
+    List<Room> findAllByManagementUnitIdWithMajors(Long managementUnitId);
+
+    @Query("SELECT DISTINCT r FROM Room r " +
+            "LEFT JOIN FETCH r.majorRooms mr " +
             "LEFT JOIN FETCH mr.major " +
             "WHERE r.id = :roomId")
     Optional<Room> findByIdWithMajors(Long roomId);

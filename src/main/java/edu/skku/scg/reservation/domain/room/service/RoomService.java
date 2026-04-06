@@ -97,7 +97,7 @@ public class RoomService {
 
         User user = userId == null ? null : userRepository.findByIdWithMajors(userId).orElse(null);
 
-        return convertToRoomDetailDto(room, user);
+        return convertToRoomResponse(room, user);
     }
 
     public Page<RoomInfo> getRooms(List<Long> managingUnitIds, Pageable pageable) {
@@ -123,17 +123,21 @@ public class RoomService {
         });
     }
 
-    public RoomSummaryList getRoomSummaries(Long managementUnitId) {
-        List<Room> rooms = roomRepository.findAllByManagementUnitId(managementUnitId);
+    public RoomSummaryList getRoomSummaries(Long managementUnitId, Long userId) {
+        List<Room> rooms = roomRepository.findAllByManagementUnitIdWithMajors(managementUnitId);
+        User user =
+                userId == null ? null :
+                userRepository.findByIdWithMajors(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         List<RoomSummary> dtos = rooms.stream().map(
                 room -> RoomSummary.builder()
                         .id(room.getId())
                         .name(room.getName())
+                        .canReserve(canUserReserveRoom(user, room))
                         .build()).toList();
 
         return RoomSummaryList.builder()
-                .content(dtos)
+                .rooms(dtos)
                 .build();
     }
 
@@ -289,7 +293,7 @@ public class RoomService {
         room.getOperatingHours().addAll(operatingHours);
     }
 
-    private RoomResponse convertToRoomDetailDto(Room room, User user) {
+    private RoomResponse convertToRoomResponse(Room room, User user) {
         List<MajorSummary> majors = room.getMajorRooms().stream()
                 .map(majorRoom -> MajorSummary.builder()
                         .id(majorRoom.getMajor().getId())
@@ -305,8 +309,6 @@ public class RoomService {
                         .build()
                 ).toList();
 
-        boolean canReserve = canUserReserveRoom(user, room);
-
         return RoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
@@ -316,7 +318,6 @@ public class RoomService {
                 .maxBookingMinutes(room.getMaxBookingMinutes())
                 .majors(majors)
                 .operatingHours(operatingHours)
-                .canReserve(canReserve)
                 .build();
     }
 
