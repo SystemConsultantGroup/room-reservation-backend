@@ -89,7 +89,9 @@ public class ReservationService {
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {
-        if (startTime.isBefore(LocalDateTime.now())) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (endTime.isBefore(now)) {
             throw new BusinessException(ErrorCode.PAST_TIME_NOT_ALLOWED);
         }
 
@@ -99,6 +101,10 @@ public class ReservationService {
 
         if (!startTime.toLocalDate().isEqual(endTime.toLocalDate())) {
             throw new BusinessException(ErrorCode.DATE_MISMATCH);
+        }
+
+        if (startTime.isAfter(now.plusYears(1))) {
+            throw new BusinessException(ErrorCode.TOO_FAR_FUTURE_RESERVATION);
         }
     }
 
