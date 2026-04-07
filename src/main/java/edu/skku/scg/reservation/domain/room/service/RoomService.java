@@ -40,6 +40,14 @@ public class RoomService {
     public void createRoom(RoomCreateRequest dto, List<Long> managingUnitIds) {
         validateMajorsOwnership(dto.majorIds(), managingUnitIds);
 
+        if (dto.minAttendeeCount() > dto.maxAttendeeCount()) {
+            throw new BusinessException(ErrorCode.INVALID_ATTENDEE_COUNT_RANGE);
+        }
+
+        if (dto.minUsageMinutes() > dto.maxUsageMinutes()) {
+            throw new BusinessException(ErrorCode.INVALID_USAGE_TIME_RANGE);
+        }
+
         Room room = Room.builder()
                 .name(dto.name())
                 .minAttendeeCount(dto.minAttendeeCount())
