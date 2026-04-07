@@ -3,7 +3,6 @@ package edu.skku.scg.reservation.domain.organization.entity;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
