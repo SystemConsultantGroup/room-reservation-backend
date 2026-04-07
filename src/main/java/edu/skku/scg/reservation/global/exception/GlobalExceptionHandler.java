@@ -29,8 +29,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode statusCode, @NonNull WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
-                "SPRING-" + statusCode.value(),
-                e.getMessage()
+                "ERROR-" + statusCode.value(),
+                "요청을 처리할 수 없습니다."
         );
 
         return new ResponseEntity<>(errorResponse, headers, statusCode);
