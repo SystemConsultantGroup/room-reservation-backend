@@ -1,12 +1,11 @@
 package edu.skku.scg.reservation.domain.room.dto;
 
+import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-@Builder
 public record OperatingHoursDetail(
         @NotNull
         DayOfWeek dayOfWeek,
@@ -16,4 +15,12 @@ public record OperatingHoursDetail(
 
         @NotNull
         LocalTime closeTime
-) {}
+) {
+    public static OperatingHoursDetail from(RoomOperatingHour operatingHour) {
+        return new OperatingHoursDetail(
+                operatingHour.getDayOfWeek(),
+                operatingHour.getOpenTime(),
+                operatingHour.getCloseTime()
+        );
+    }
+}

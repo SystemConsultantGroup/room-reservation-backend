@@ -42,10 +42,8 @@ public class RoomController {
     @Operation(summary = "공간 상세 조회")
     @PublicApi
     @GetMapping("/{roomId}")
-    public RoomResponse getRoom(
-            @PathVariable Long roomId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        return roomService.getRoom(roomId, userPrincipal == null ? null : userPrincipal.getId());
+    public RoomResponse getRoom(@PathVariable Long roomId) {
+        return roomService.getRoom(roomId);
     }
 
     @Operation(summary = "공간 정보 수정")
@@ -115,8 +113,11 @@ public class RoomController {
     @PublicApi
     @GetMapping("/summary")
     public RoomSummaryList getRoomSummaries(
-            @ManagementUnitId Long managementUnitId) {
+            @ManagementUnitId Long managementUnitId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
-        return roomService.getRoomSummaries(managementUnitId);
+        Long userId = userPrincipal == null ? null : userPrincipal.getId();
+
+        return roomService.getRoomSummaries(managementUnitId, userId);
     }
 }

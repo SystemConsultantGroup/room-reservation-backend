@@ -1,9 +1,9 @@
 package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.organization.dto.NoticeDetail;
-import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequest;
-import edu.skku.scg.reservation.domain.organization.service.NoticeService;
+import edu.skku.scg.reservation.domain.organization.dto.*;
+import edu.skku.scg.reservation.domain.organization.service.MajorService;
+import edu.skku.scg.reservation.domain.organization.service.ManagementUnitService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
@@ -13,29 +13,29 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "공지 API")
+@Tag(name = "관리 단위 API")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/notice")
-public class NoticeController {
+@RequestMapping("/managementUnit")
+public class ManagementUnitController {
 
-    private final NoticeService noticeService;
+    private final ManagementUnitService managementUnitService;
 
-    @Operation(summary = "공지 조회")
+    @Operation(summary = "관리 단위 정보 조회")
     @PublicApi
     @GetMapping
-    public NoticeDetail getNotice(@ManagementUnitId Long managementUnitId) {
-        return noticeService.getNotice(managementUnitId);
+    public ManagementUnitDetail getManagementUnit(@ManagementUnitId Long managementUnitId) {
+        return managementUnitService.getManagementUnit(managementUnitId);
     }
 
     @Operation(summary = "공지 수정")
     @AdminApi
-    @PutMapping
+    @PutMapping("/notice")
     public void updateNotice(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @ManagementUnitId Long managementUnitId,
             @RequestBody UpdateNoticeRequest dto) {
 
-        noticeService.updateNotice(managementUnitId, dto, userPrincipal.getManagingUnitIds());
+        managementUnitService.updateNotice(managementUnitId, dto, userPrincipal.getManagingUnitIds());
     }
 }

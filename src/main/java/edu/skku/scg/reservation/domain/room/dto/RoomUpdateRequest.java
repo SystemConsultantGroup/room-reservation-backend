@@ -13,15 +13,27 @@ public record RoomUpdateRequest(
         @NotBlank
         String name,
 
+        @NotNull
         @Positive
-        Integer capacity,
+        Integer minAttendeeCount,
+
+        @NotNull
+        @Positive
+        Integer maxAttendeeCount,
+
+        @NotBlank
         String roomNumber,
 
         @NotNull
         RoomAccessPolicy accessPolicy,
 
+        @NotNull
         @Positive
-        Integer maxBookingMinutes,
+        Integer minUsageMinutes,
+
+        @NotNull
+        @Positive
+        Integer maxUsageMinutes,
 
         @NotEmpty
         List<Long> majorIds,

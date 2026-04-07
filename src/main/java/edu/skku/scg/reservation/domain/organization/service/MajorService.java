@@ -1,12 +1,8 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationDetail;
-import edu.skku.scg.reservation.domain.organization.dto.MajorRequest;
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
+import edu.skku.scg.reservation.domain.organization.dto.*;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
-import edu.skku.scg.reservation.domain.user.dto.MajorInfo;
-import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.entity.*;
 import edu.skku.scg.reservation.domain.user.repository.UserMajorRepository;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
@@ -122,20 +118,14 @@ public class MajorService {
     public List<MajorSummary> getMajorSummaries(Long managementUnitId) {
         List<Major> majors = majorRepository.findAllByManagementUnitId(managementUnitId);
         return majors.stream()
-                .map(major -> MajorSummary.builder()
-                        .id(major.getId())
-                        .name(major.getName())
-                        .build())
+                .map(MajorSummary::from)
                 .toList();
     }
 
     public List<MajorSummary> getMajorSummaries(List<Long> managementUnitIds) {
         List<Major> majors = majorRepository.findAllByManagementUnitIdIn(managementUnitIds);
         return majors.stream()
-                .map(major -> MajorSummary.builder()
-                        .id(major.getId())
-                        .name(major.getName())
-                        .build())
+                .map(MajorSummary::from)
                 .toList();
     }
 
@@ -155,41 +145,14 @@ public class MajorService {
                 pageable,
                 keyword);
 
-        return users.map(user -> {
+        return users.map(user -> MajorApplicationDetail.from(user, managingUnitIds));
+    }
 
-            List<MajorInfo> approvedMajors = user.getUserMajors().stream()
-                    .filter(um -> um.getStatus() == RegistrationStatus.APPROVED)
-                    .map(um -> MajorInfo.builder()
-                            .id(um.getMajor().getId())
-                            .name(um.getMajor().getName())
-                            .type(um.getType())
-                            .build())
-                    .toList();
+    public MajorApplicationList getApplications(Long userId) {
+        User user = userRepository.findByIdWithMajors(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-            UserInfo userInfo = UserInfo.builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .studentId(user.getStudentId())
-                    .type(user.getType())
-                    .majors(approvedMajors)
-                    .build();
-
-            List<MajorApplicationDetail.MajorApplication> pendingApplications = user.getUserMajors().stream()
-                    .filter(um -> um.getStatus() == RegistrationStatus.PENDING)
-                    .filter(um -> managingUnitIds.contains(um.getMajor().getManagementUnit().getId()))
-                    .map(um -> MajorApplicationDetail.MajorApplication.builder()
-                            .id(um.getId())
-                            .major(MajorSummary.builder()
-                                    .id(um.getMajor().getId())
-                                    .name(um.getMajor().getName())
-                                    .build())
-                            .type(um.getType())
-                            .build())
-                    .toList();
-
-            return new MajorApplicationDetail(userInfo, pendingApplications);
-        });
+        return MajorApplicationList.from(user);
     }
 
     private UserMajor getUserMajor(Long userMajorId) {

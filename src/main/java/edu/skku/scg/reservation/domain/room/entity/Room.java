@@ -1,6 +1,7 @@
 package edu.skku.scg.reservation.domain.room.entity;
 
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
+import edu.skku.scg.reservation.domain.room.dto.RoomUpdateRequest;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -23,7 +24,11 @@ public class Room extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    private Integer capacity;
+    @Column(nullable = false)
+    private Integer minAttendeeCount;
+
+    @Column(nullable = false)
+    private Integer maxAttendeeCount;
 
     private String roomNumber;
 
@@ -31,7 +36,11 @@ public class Room extends BaseTimeEntity {
     @Column(nullable = false)
     private RoomAccessPolicy accessPolicy;
 
-    private Integer maxBookingMinutes;
+    @Column(nullable = false)
+    private Integer minUsageMinutes;
+
+    @Column(nullable = false)
+    private Integer maxUsageMinutes;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MajorRoom> majorRooms = new ArrayList<>();
@@ -43,19 +52,23 @@ public class Room extends BaseTimeEntity {
     private List<Reservation> reservations = new ArrayList<>();
 
     @Builder
-    public Room(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy, Integer maxBookingMinutes) {
+    public Room(String name, Integer minAttendeeCount, Integer maxAttendeeCount, String roomNumber, RoomAccessPolicy accessPolicy, Integer minUsageMinutes, Integer maxUsageMinutes) {
         this.name = name;
-        this.capacity = capacity;
+        this.minAttendeeCount = minAttendeeCount;
+        this.maxAttendeeCount = maxAttendeeCount;
         this.roomNumber = roomNumber;
         this.accessPolicy = accessPolicy;
-        this.maxBookingMinutes = maxBookingMinutes;
+        this.minUsageMinutes = minUsageMinutes;
+        this.maxUsageMinutes = maxUsageMinutes;
     }
 
-    public void update(String name, Integer capacity, String roomNumber, RoomAccessPolicy accessPolicy, Integer maxBookingMinutes) {
-        this.name = name;
-        this.capacity = capacity;
-        this.roomNumber = roomNumber;
-        this.accessPolicy = accessPolicy;
-        this.maxBookingMinutes = maxBookingMinutes;
+    public void update(RoomUpdateRequest command) {
+        this.name = command.name();
+        this.minAttendeeCount = command.minAttendeeCount();
+        this.maxAttendeeCount = command.maxAttendeeCount();
+        this.roomNumber = command.roomNumber();
+        this.accessPolicy = command.accessPolicy();
+        this.minUsageMinutes = command.minUsageMinutes();
+        this.maxUsageMinutes = command.maxUsageMinutes();
     }
 }

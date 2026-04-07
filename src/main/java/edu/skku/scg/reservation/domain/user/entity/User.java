@@ -45,7 +45,7 @@ public class User extends BaseTimeEntity {
         this.type = UserType.GUEST;
     }
 
-    public void completeOnboarding(UserType userType, String studentId) {
+    public void completeOnboarding(String name, UserType userType, String studentId) {
         if (this.type != UserType.GUEST) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_USER);
         }
@@ -63,6 +63,7 @@ public class User extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.INVALID_USER_TYPE);
         }
 
+        this.name = name;
         this.type = userType;
         this.studentId = studentId;
     }

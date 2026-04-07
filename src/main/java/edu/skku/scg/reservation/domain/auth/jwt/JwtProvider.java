@@ -56,12 +56,12 @@ public class JwtProvider {
                         .toList()
                 : Collections.emptyList();
 
-        return AccessToken.builder()
-                .userId(Long.parseLong(claims.getSubject()))
-                .type(type)
-                .expiresAt(toLocalDateTime(claims.getExpiration()))
-                .managingUnitIds(managingUnitIds)
-                .build();
+        return new AccessToken(
+                Long.parseLong(claims.getSubject()),
+                type,
+                managingUnitIds,
+                toLocalDateTime(claims.getExpiration())
+        );
     }
 
     private Claims getClaims(String token) {

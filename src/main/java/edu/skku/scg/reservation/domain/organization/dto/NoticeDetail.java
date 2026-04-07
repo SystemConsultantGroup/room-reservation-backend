@@ -1,9 +1,12 @@
 package edu.skku.scg.reservation.domain.organization.dto;
 
-import lombok.Builder;
+import edu.skku.scg.reservation.domain.organization.entity.ManagementUnit;
 
-@Builder
 public record NoticeDetail(
         String title,
         String content
-) {}
+) {
+    public static NoticeDetail from(ManagementUnit managementUnit) {
+        return new NoticeDetail(managementUnit.getNoticeTitle(), managementUnit.getNoticeContent());
+    }
+}

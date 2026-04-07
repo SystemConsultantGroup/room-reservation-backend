@@ -1,10 +1,13 @@
 package edu.skku.scg.reservation.domain.room.dto;
 
-import lombok.Builder;
+import edu.skku.scg.reservation.domain.room.entity.Room;
 
-@Builder
 public record RoomSummary(
         Long id,
-        String name
+        String name,
+        Boolean canReserve
 ) {
+    public static RoomSummary from(Room room, boolean canReserve) {
+        return new RoomSummary(room.getId(), room.getName(), canReserve);
+    }
 }

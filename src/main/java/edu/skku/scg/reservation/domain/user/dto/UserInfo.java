@@ -1,11 +1,11 @@
 package edu.skku.scg.reservation.domain.user.dto;
 
 import edu.skku.scg.reservation.domain.user.entity.UserType;
-import lombok.Builder;
+import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
+import edu.skku.scg.reservation.domain.user.entity.User;
 
 import java.util.List;
 
-@Builder
 public record UserInfo(
         Long id,
         String email,
@@ -13,4 +13,20 @@ public record UserInfo(
         String studentId,
         UserType type,
         List<MajorInfo> majors
-) {}
+) {
+    public static UserInfo from(User user) {
+        List<MajorInfo> majors = user.getUserMajors().stream()
+                .filter(userMajor -> userMajor.getStatus() == RegistrationStatus.APPROVED)
+                .map(MajorInfo::from)
+                .toList();
+
+        return new UserInfo(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getStudentId(),
+                user.getType(),
+                majors
+        );
+    }
+}

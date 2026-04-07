@@ -84,7 +84,7 @@ public class AuthService {
     @Transactional
     public String completeOnboarding(Long userId, OnboardingRequest dto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        user.completeOnboarding(dto.userType(), dto.studentId());
+        user.completeOnboarding(dto.name(), dto.userType(), dto.studentId());
 
         majorService.applyMajor(user.getId(), dto.majors());
 
@@ -132,10 +132,10 @@ public class AuthService {
 
             List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
 
-            return GoogleLoginResult.builder()
-                    .isGuest(user.getType() == UserType.GUEST)
-                    .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managingUnitIds))
-                    .build();
+            return new GoogleLoginResult(
+                    user.getType() == UserType.GUEST,
+                    jwtProvider.createAccessToken(user.getId(), user.getType(), managingUnitIds)
+            );
 
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);
