@@ -1,9 +1,7 @@
 package edu.skku.scg.reservation.domain.room.service;
 
-import edu.skku.scg.reservation.domain.organization.dto.MajorSummary;
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
-import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.dto.*;
@@ -11,7 +9,6 @@ import edu.skku.scg.reservation.domain.room.entity.MajorRoom;
 import edu.skku.scg.reservation.domain.room.entity.Room;
 import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
-import edu.skku.scg.reservation.domain.user.dto.UserSummary;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -102,27 +99,7 @@ public class RoomService {
 
     public Page<RoomInfo> getRooms(List<Long> managingUnitIds, Pageable pageable) {
         Page<Room> roomPage = roomRepository.findRoomsByManagementUnitIds(managingUnitIds, pageable);
-
-        return roomPage.map(room -> {
-            List<MajorSummary> majors = room.getMajorRooms().stream()
-                    .map(mr -> MajorSummary.builder()
-                            .id(mr.getMajor().getId())
-                            .name(mr.getMajor().getName())
-                            .build()
-                    ).toList();
-
-            return RoomInfo.builder()
-                    .id(room.getId())
-                    .name(room.getName())
-                    .minAttendeeCount(room.getMinAttendeeCount())
-                    .maxAttendeeCount(room.getMaxAttendeeCount())
-                    .roomNumber(room.getRoomNumber())
-                    .accessPolicy(room.getAccessPolicy())
-                    .minUsageMinutes(room.getMinUsageMinutes())
-                    .maxUsageMinutes(room.getMaxUsageMinutes())
-                    .majors(majors)
-                    .build();
-        });
+        return roomPage.map(RoomInfo::from);
     }
 
     public RoomSummaryList getRoomSummaries(Long managementUnitId, Long userId) {
@@ -131,16 +108,7 @@ public class RoomService {
                 userId == null ? null :
                 userRepository.findByIdWithMajors(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        List<RoomSummary> dtos = rooms.stream().map(
-                room -> RoomSummary.builder()
-                        .id(room.getId())
-                        .name(room.getName())
-                        .canReserve(canUserReserveRoom(user, room))
-                        .build()).toList();
-
-        return RoomSummaryList.builder()
-                .rooms(dtos)
-                .build();
+        return RoomSummaryList.from(rooms, room -> canUserReserveRoom(user, room));
     }
 
     public Page<DailyRoomScheduleResponse> getDailyRoomSchedules(Long managementUnitId, LocalDate date, Pageable pageable) {
@@ -163,30 +131,13 @@ public class RoomService {
             Long roomId = room.getId();
 
             List<Reservation> roomReservations = reservationMap.getOrDefault(roomId, List.of());
-            List<ReservationDetail> reservations = roomReservations.stream()
-                    .map(res -> ReservationDetail.builder()
-                            .id(res.getId())
-                            .startTime(res.getStartTime())
-                            .endTime(res.getEndTime())
-                            .user(new UserSummary(res.getUser().getId(), res.getUser().getName()))
-                            .attendeeCount(res.getAttendeeCount())
-                            .purpose(res.getPurpose())
-                            .build()
-                    ).toList();
 
             RoomOperatingHour todayHour = room.getOperatingHours().stream()
                     .filter(hour -> hour.getDayOfWeek().equals(date.getDayOfWeek()))
                     .findFirst()
                     .orElse(null);
 
-            return DailyRoomScheduleResponse.builder()
-                    .id(room.getId())
-                    .name(room.getName())
-                    .roomNumber(room.getRoomNumber())
-                    .openTime(todayHour != null ? todayHour.getOpenTime() : null)
-                    .closeTime(todayHour != null ? todayHour.getCloseTime() : null)
-                    .reservations(reservations)
-                    .build();
+            return DailyRoomScheduleResponse.from(room, todayHour, roomReservations);
         });
     }
 
@@ -206,21 +157,7 @@ public class RoomService {
         List<Reservation> weeklyReservations = reservationRepository
                 .findReservationsByRoomIdAndDate(roomId, startDateTime, endDateTime);
 
-        List<ReservationDetail> reservationDtos = weeklyReservations.stream()
-                .map(res -> ReservationDetail.builder()
-                        .id(res.getId())
-                        .startTime(res.getStartTime())
-                        .endTime(res.getEndTime())
-                        .user(new UserSummary(res.getUser().getId(), res.getUser().getName()))
-                        .attendeeCount(res.getAttendeeCount())
-                        .purpose(res.getPurpose())
-                        .build()
-                ).toList();
-
-        return WeeklyRoomScheduleResponse.builder()
-                .id(roomId)
-                .reservations(reservationDtos)
-                .build();
+        return WeeklyRoomScheduleResponse.from(roomId, weeklyReservations);
     }
 
     private void validateMajorsOwnership(List<Long> majorIds, List<Long> managingUnitIds) {
@@ -287,33 +224,7 @@ public class RoomService {
     }
 
     private RoomResponse convertToRoomResponse(Room room) {
-        List<MajorSummary> majors = room.getMajorRooms().stream()
-                .map(majorRoom -> MajorSummary.builder()
-                        .id(majorRoom.getMajor().getId())
-                        .name(majorRoom.getMajor().getName())
-                        .build()
-                ).toList();
-
-        List<OperatingHoursDetail> operatingHours = room.getOperatingHours().stream()
-                .map(operatingHour -> OperatingHoursDetail.builder()
-                        .dayOfWeek(operatingHour.getDayOfWeek())
-                        .openTime(operatingHour.getOpenTime())
-                        .closeTime(operatingHour.getCloseTime())
-                        .build()
-                ).toList();
-
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .minAttendeeCount(room.getMinAttendeeCount())
-                .maxAttendeeCount(room.getMaxAttendeeCount())
-                .roomNumber(room.getRoomNumber())
-                .accessPolicy(room.getAccessPolicy())
-                .minUsageMinutes(room.getMinUsageMinutes())
-                .maxUsageMinutes(room.getMaxUsageMinutes())
-                .majors(majors)
-                .operatingHours(operatingHours)
-                .build();
+        return RoomResponse.from(room);
     }
 
     private boolean canUserReserveRoom(User user, Room room) {

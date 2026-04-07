@@ -1,7 +1,6 @@
 package edu.skku.scg.reservation.domain.reservation.service;
 
 import edu.skku.scg.reservation.domain.reservation.dto.CreateReservationRequest;
-import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
 import edu.skku.scg.reservation.domain.reservation.dto.ReservationList;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
@@ -10,7 +9,6 @@ import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import edu.skku.scg.reservation.domain.room.repository.RoomOperatingHourRepository;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
 import edu.skku.scg.reservation.domain.room.service.RoomAccessChecker;
-import edu.skku.scg.reservation.domain.user.dto.UserSummary;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -71,20 +69,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository
                 .findReservationsByUserIdAndTimeAfter(userId, standardTime);
 
-        List<ReservationDetail> details = reservations.stream()
-                .map(r -> ReservationDetail.builder()
-                        .id(r.getId())
-                        .user(new UserSummary(r.getUser().getId(), r.getUser().getName()))
-                        .startTime(r.getStartTime())
-                        .endTime(r.getEndTime())
-                        .attendeeCount(r.getAttendeeCount())
-                        .purpose(r.getPurpose())
-                        .build())
-                .toList();
-
-        return ReservationList.builder()
-                .reservations(details)
-                .build();
+        return ReservationList.from(reservations);
     }
 
     @Transactional

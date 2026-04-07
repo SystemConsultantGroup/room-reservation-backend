@@ -1,7 +1,6 @@
 package edu.skku.scg.reservation.domain.organization.service;
 
 import edu.skku.scg.reservation.domain.organization.dto.ManagementUnitDetail;
-import edu.skku.scg.reservation.domain.organization.dto.NoticeDetail;
 import edu.skku.scg.reservation.domain.organization.dto.UpdateNoticeRequest;
 import edu.skku.scg.reservation.domain.organization.entity.ManagementUnit;
 import edu.skku.scg.reservation.domain.organization.repository.ManagementUnitRepository;
@@ -23,13 +22,7 @@ public class ManagementUnitService {
 
     public ManagementUnitDetail getManagementUnit(Long managementUnitId) {
         ManagementUnit managementUnit = getManagementUnitOrThrow(managementUnitId);
-        return ManagementUnitDetail.builder()
-                .id(managementUnit.getId())
-                .name(managementUnit.getName())
-                .approvalMethod(managementUnit.getApprovalMethod())
-                .noticeTitle(managementUnit.getNoticeTitle())
-                .noticeContent(managementUnit.getNoticeContent())
-                .build();
+        return ManagementUnitDetail.from(managementUnit);
     }
 
     @Transactional

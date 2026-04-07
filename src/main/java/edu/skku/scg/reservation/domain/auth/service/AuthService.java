@@ -132,10 +132,10 @@ public class AuthService {
 
             List<Long> managingUnitIds = userManagementUnitRepository.findAllManagementUnitIdsByUserId(user.getId());
 
-            return GoogleLoginResult.builder()
-                    .isGuest(user.getType() == UserType.GUEST)
-                    .accessToken(jwtProvider.createAccessToken(user.getId(), user.getType(), managingUnitIds))
-                    .build();
+            return new GoogleLoginResult(
+                    user.getType() == UserType.GUEST,
+                    jwtProvider.createAccessToken(user.getId(), user.getType(), managingUnitIds)
+            );
 
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.OAUTH_LOGIN_FAIL, e);

@@ -1,17 +1,29 @@
-    package edu.skku.scg.reservation.domain.user.dto;
+package edu.skku.scg.reservation.domain.user.dto;
 
-    import edu.skku.scg.reservation.domain.user.entity.UserType;
-    import lombok.Builder;
+import edu.skku.scg.reservation.domain.user.entity.User;
+import edu.skku.scg.reservation.domain.user.entity.UserType;
 
-    import java.util.List;
+import java.util.List;
 
-    @Builder
-    public record UserDetail(
-            Long id,
-            String email,
-            String name,
-            String studentId,
-            UserType type,
-            List<MajorInfo> majors,
-            List<Long> managingUnitIds
-    ) {}
+public record UserDetail(
+        Long id,
+        String email,
+        String name,
+        String studentId,
+        UserType type,
+        List<MajorInfo> majors,
+        List<Long> managingUnitIds
+) {
+    public static UserDetail from(User user, List<Long> managingUnitIds) {
+        UserInfo userInfo = UserInfo.from(user);
+        return new UserDetail(
+                userInfo.id(),
+                userInfo.email(),
+                userInfo.name(),
+                userInfo.studentId(),
+                userInfo.type(),
+                userInfo.majors(),
+                managingUnitIds
+        );
+    }
+}
