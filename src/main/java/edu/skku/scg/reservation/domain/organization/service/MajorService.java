@@ -55,6 +55,12 @@ public class MajorService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        Set<MajorType> pendingTypes = user.getUserMajors().stream()
+                .filter(um -> um.getStatus() == RegistrationStatus.PENDING)
+                .map(UserMajor::getType)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         Set<MajorType> applyingTypes = new HashSet<>();
 
         for (MajorRequest majorRequest : majorRequests) {
@@ -71,9 +77,11 @@ public class MajorService {
                 if (approvedTypes.contains(majorRequest.type())) {
                     throw new BusinessException(ErrorCode.ALREADY_HELD_MAJOR_TYPE);
                 }
-                if (applyingTypes.contains(majorRequest.type())) {
+
+                if (pendingTypes.contains(majorRequest.type()) || applyingTypes.contains(majorRequest.type())) {
                     throw new BusinessException(ErrorCode.DUPLICATE_MAJOR_TYPE_REQUEST);
                 }
+
                 applyingTypes.add(majorRequest.type());
             }
 
