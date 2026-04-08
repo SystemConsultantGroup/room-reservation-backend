@@ -160,6 +160,21 @@ public class MajorService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_MAJOR_NOT_FOUND));
     }
 
+    @Transactional
+    public void cancelApplication(Long userId, Long userMajorId) {
+        UserMajor userMajor = getUserMajor(userMajorId);
+
+        if (!userMajor.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (userMajor.getStatus() != RegistrationStatus.PENDING) {
+            throw new BusinessException(ErrorCode.ALREADY_PROCESSED_MAJOR_REGISTRATION);
+        }
+
+        userMajorRepository.delete(userMajor);
+    }
+
     private void validateMajorOwnership(List<Long> managingUnitIds, UserMajor userMajor) {
         if (!managingUnitIds.contains(userMajor.getMajor().getManagementUnit().getId())) {
             throw new BusinessException(ErrorCode.ACCESS_DENIED);
