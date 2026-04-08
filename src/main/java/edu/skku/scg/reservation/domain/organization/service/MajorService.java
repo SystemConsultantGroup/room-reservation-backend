@@ -55,6 +55,12 @@ public class MajorService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
+        Set<MajorType> pendingTypes = user.getUserMajors().stream()
+                .filter(um -> um.getStatus() == RegistrationStatus.PENDING)
+                .map(UserMajor::getType)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
         Set<MajorType> applyingTypes = new HashSet<>();
 
         for (MajorRequest majorRequest : majorRequests) {
@@ -71,9 +77,11 @@ public class MajorService {
                 if (approvedTypes.contains(majorRequest.type())) {
                     throw new BusinessException(ErrorCode.ALREADY_HELD_MAJOR_TYPE);
                 }
-                if (applyingTypes.contains(majorRequest.type())) {
+
+                if (pendingTypes.contains(majorRequest.type()) || applyingTypes.contains(majorRequest.type())) {
                     throw new BusinessException(ErrorCode.DUPLICATE_MAJOR_TYPE_REQUEST);
                 }
+
                 applyingTypes.add(majorRequest.type());
             }
 
@@ -158,6 +166,21 @@ public class MajorService {
     private UserMajor getUserMajor(Long userMajorId) {
         return userMajorRepository.findById(userMajorId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_MAJOR_NOT_FOUND));
+    }
+
+    @Transactional
+    public void cancelApplication(Long userId, Long userMajorId) {
+        UserMajor userMajor = getUserMajor(userMajorId);
+
+        if (!userMajor.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (userMajor.getStatus() != RegistrationStatus.PENDING) {
+            throw new BusinessException(ErrorCode.ALREADY_PROCESSED_MAJOR_REGISTRATION);
+        }
+
+        userMajorRepository.delete(userMajor);
     }
 
     private void validateMajorOwnership(List<Long> managingUnitIds, UserMajor userMajor) {

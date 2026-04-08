@@ -37,7 +37,11 @@ public class ReservationService {
     public void reserveRoom(Long userId, CreateReservationRequest dto) {
         User user = userRepository.findByIdWithMajors(userId).orElseThrow(
                 () -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        Room room = roomRepository.findByIdWithMajorsAndLock(dto.roomId()).orElseThrow(
+
+        roomRepository.findByIdForUpdate(dto.roomId()).orElseThrow(
+                () -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+
+        Room room = roomRepository.findByIdWithMajors(dto.roomId()).orElseThrow(
                 () -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
 
         roomAccessChecker.checkAccess(user, room);

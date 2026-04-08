@@ -32,13 +32,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findRoomsByManagementUnitIds(List<Long> managementUnitIds, Pageable pageable);
 
     @Query("SELECT DISTINCT r FROM Room r " +
-            "JOIN MajorRoom mr ON r.id = mr.room.id " +
-            "JOIN Major m ON mr.major.id = m.id " +
-            "WHERE m.managementUnit.id = :managementUnitId " +
-            "ORDER BY r.id ASC")
-    List<Room> findAllByManagementUnitId(Long managementUnitId);
-
-    @Query("SELECT DISTINCT r FROM Room r " +
             "LEFT JOIN FETCH r.majorRooms mr " +
             "LEFT JOIN FETCH mr.major m " +
             "WHERE m.managementUnit.id = :managementUnitId " +
@@ -52,9 +45,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Optional<Room> findByIdWithMajors(Long roomId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT DISTINCT r FROM Room r " +
-            "LEFT JOIN FETCH r.majorRooms mr " +
-            "LEFT JOIN FETCH mr.major " +
-            "WHERE r.id = :roomId")
-    Optional<Room> findByIdWithMajorsAndLock(Long roomId);
+    @Query("SELECT r FROM Room r WHERE r.id = :roomId")
+    Optional<Room> findByIdForUpdate(Long roomId);
 }

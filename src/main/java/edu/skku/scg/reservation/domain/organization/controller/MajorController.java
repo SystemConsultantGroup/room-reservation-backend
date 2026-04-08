@@ -78,6 +78,15 @@ public class MajorController {
         majorService.rejectApplication(applicationId, userPrincipal.getManagingUnitIds());
     }
 
+    @Operation(summary = "전공 등록 신청 취소")
+    @DeleteMapping("/applications/{applicationId}")
+    public void cancelMyApplication(
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+
+        majorService.cancelApplication(userPrincipal.getId(), applicationId);
+    }
+
     @Operation(summary = "전공 목록 조회")
     @PublicApi
     @GetMapping
