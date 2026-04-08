@@ -103,7 +103,7 @@ public class MajorService {
 
         validateMajorOwnership(managingUnitIds, userMajor);
 
-        if (userMajor.getStatus() != RegistrationStatus.PENDING) {
+        if (userMajor.getStatus() == RegistrationStatus.APPROVED) {
             throw new BusinessException(ErrorCode.ALREADY_PROCESSED_MAJOR_REGISTRATION);
         }
 
@@ -116,7 +116,7 @@ public class MajorService {
 
         validateMajorOwnership(managingUnitIds, userMajor);
 
-        if (userMajor.getStatus() != RegistrationStatus.PENDING) {
+        if (userMajor.getStatus() == RegistrationStatus.REJECTED) {
             throw new BusinessException(ErrorCode.ALREADY_PROCESSED_MAJOR_REGISTRATION);
         }
 
