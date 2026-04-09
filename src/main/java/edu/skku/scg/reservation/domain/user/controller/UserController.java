@@ -1,8 +1,10 @@
 package edu.skku.scg.reservation.domain.user.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.organization.dto.MajorApplicationList;
-import edu.skku.scg.reservation.domain.user.dto.*;
+import edu.skku.scg.reservation.domain.user.dto.GetMeResponse;
+import edu.skku.scg.reservation.domain.user.dto.UpdateMeRequest;
+import edu.skku.scg.reservation.domain.user.dto.UserDetail;
+import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.service.UserService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.dto.PageResponse;
@@ -13,7 +15,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "유저 API")
 @RequiredArgsConstructor
@@ -34,7 +43,7 @@ public class UserController {
     public void updateMe(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestBody UpdateMeRequest dto) {
-        // 해당 유저의 정보를 dto에 따라 변경한다.
+        userService.updateMe(userPrincipal.getId(), dto);
     }
 
     @Operation(summary = "유저 목록 조회")
@@ -50,21 +59,13 @@ public class UserController {
         return PageResponse.of(userService.getUsers(userPrincipal.getManagingUnitIds(), pageable, keyword));
     }
 
-    @Operation(summary = "유저 유형 변경")
-    @AdminApi
-    @PatchMapping("/{userId}/type")
-    public void updateUserType(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody UpdateUserTypeRequest dto) {
-        // 이 API를 호출하려면 해당 user와 연결된 major의 managementUnitId 중 하나 이상이 userPrincipal.getManagingUnitIds()에 속해야함
-    }
-
     @Operation(summary = "유저 상세 정보 조회")
     @AdminApi
     @GetMapping("/{userId}")
-    public UserDetail getMyApplications(
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        // 이 API를 호출하려면 해당 user와 연결된 major의 managementUnitId 중 하나 이상이 userPrincipal.getManagingUnitIds()에 속해야함
+    public UserDetail getUserDetail(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long userId) {
+        return userService.getUserDetail(userId, userPrincipal.getManagingUnitIds());
     }
 
     @Operation(summary = "유저의 향후 모든 예약 취소")
@@ -73,10 +74,6 @@ public class UserController {
     public void cancelAllFutureReservations(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long userId) {
-        // 이 API를 호출하려면 해당 user와 연결된 major의 managementUnitId 중 하나 이상이 userPrincipal.getManagingUnitIds()에 속해야함
-        // ReservationService에 userId와 userPrincipal.getManagingUnitIds()를 받는 새 메서드를 만들어서
-        // 해당 user의 향후 모든 예약을 bulk delete한다.
-        // 다만, 예약의 room과 연결된 전공들의 managementUnitId 목록이 모두 userPrincipal.getManagingUnitIds()에 속한 예약만 삭제한다.
-        // (roomRepository.findRoomsByManagementUnitIds 참고)
+        userService.cancelAllFutureReservations(userId, userPrincipal.getManagingUnitIds());
     }
 }

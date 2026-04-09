@@ -9,6 +9,7 @@ import edu.skku.scg.reservation.domain.room.entity.RoomOperatingHour;
 import edu.skku.scg.reservation.domain.room.repository.RoomOperatingHourRepository;
 import edu.skku.scg.reservation.domain.room.repository.RoomRepository;
 import edu.skku.scg.reservation.domain.room.service.RoomAccessChecker;
+import edu.skku.scg.reservation.domain.room.service.RoomService;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.repository.UserRepository;
 import edu.skku.scg.reservation.global.exception.BusinessException;
@@ -27,9 +28,10 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ReservationService {
 
-    private final RoomRepository roomRepository;
-    private final RoomOperatingHourRepository roomOperatingHourRepository;
     private final ReservationRepository reservationRepository;
+    private final RoomRepository roomRepository;
+    private final RoomService roomService;
+    private final RoomOperatingHourRepository roomOperatingHourRepository;
     private final RoomAccessChecker roomAccessChecker;
     private final UserRepository userRepository;
 
@@ -77,12 +79,14 @@ public class ReservationService {
     }
 
     @Transactional
-    public void deleteReservation(Long userId, Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
+    public void deleteReservation(Long userId, Long reservationId, List<Long> managingUnitIds) {
+        Reservation reservation = reservationRepository.findByIdWithRoomMajors(reservationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
 
-        if (!reservation.getUser().getId().equals(userId)) {
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        boolean isOwner = reservation.getUser().getId().equals(userId);
+
+        if (!isOwner) {
+            roomService.validateRoomOwnership(reservation.getRoom(), managingUnitIds);
         }
 
         if (reservation.getEndTime().isBefore(LocalDateTime.now())) {
@@ -90,6 +94,21 @@ public class ReservationService {
         }
 
         reservationRepository.delete(reservation);
+    }
+
+    @Transactional
+    public void cancelAllFutureReservations(Long userId, List<Long> managingUnitIds) {
+        List<Long> roomIds = roomRepository.findRoomIdsByManagementUnitIds(managingUnitIds);
+
+        if (roomIds.isEmpty()) {
+            return;
+        }
+
+        reservationRepository.deleteFutureReservationsByUserIdAndRoomIds(
+                userId,
+                LocalDateTime.now(),
+                roomIds
+        );
     }
 
     private void validateTimeRange(LocalDateTime startTime, LocalDateTime endTime) {

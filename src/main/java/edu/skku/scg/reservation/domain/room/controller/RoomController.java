@@ -2,7 +2,13 @@ package edu.skku.scg.reservation.domain.room.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
-import edu.skku.scg.reservation.domain.room.dto.*;
+import edu.skku.scg.reservation.domain.room.dto.DailyRoomScheduleResponse;
+import edu.skku.scg.reservation.domain.room.dto.RoomCreateRequest;
+import edu.skku.scg.reservation.domain.room.dto.RoomInfo;
+import edu.skku.scg.reservation.domain.room.dto.RoomResponse;
+import edu.skku.scg.reservation.domain.room.dto.RoomSummaryList;
+import edu.skku.scg.reservation.domain.room.dto.RoomUpdateRequest;
+import edu.skku.scg.reservation.domain.room.dto.WeeklyRoomScheduleResponse;
 import edu.skku.scg.reservation.domain.room.service.RoomService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
@@ -18,7 +24,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
@@ -126,10 +140,17 @@ public class RoomController {
     @AdminApi
     @GetMapping("{roomId}/reservations")
     public PageResponse<ReservationDetail> getFutureReservations(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long roomId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @ManagementUnitId Long managementUnitId) {
-        // 이 API를 호출하려면 해당 room과 연결된 전공들의 managementUnitId 목록이 모두 userPrincipal.getManagingUnitIds()에 속해있어야 한다.
-        // (roomRepository.findRoomsByManagementUnitIds 참고)
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startTime"));
+        Page<ReservationDetail> reservations = roomService.getFutureReservations(
+                roomId,
+                userPrincipal.getManagingUnitIds(),
+                pageable
+        );
+
+        return PageResponse.of(reservations);
     }
 }

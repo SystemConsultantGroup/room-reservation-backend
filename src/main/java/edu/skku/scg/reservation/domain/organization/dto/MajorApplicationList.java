@@ -8,9 +8,9 @@ import java.util.List;
 public record MajorApplicationList(
         List<MajorApplication> applications
 ) {
-    public static MajorApplicationList from(User user, boolean includeApproved) {
+    public static MajorApplicationList from(User user) {
         List<MajorApplication> applications = user.getUserMajors().stream()
-                .filter(um -> um.getStatus() != RegistrationStatus.APPROVED || includeApproved)
+                .filter(um -> um.getStatus() != RegistrationStatus.APPROVED)
                 .map(MajorApplication::from)
                 .toList();
         return new MajorApplicationList(applications);

@@ -44,6 +44,6 @@ public class ReservationController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long reservationId) {
 
-        reservationService.deleteReservation(userPrincipal.getId(), reservationId);
+        reservationService.deleteReservation(userPrincipal.getId(), reservationId, userPrincipal.getManagingUnitIds());
     }
 }

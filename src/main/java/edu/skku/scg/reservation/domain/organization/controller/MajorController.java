@@ -55,7 +55,7 @@ public class MajorController {
     public MajorApplicationList getMyApplications(
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
-        return majorService.getApplications(userPrincipal.getId(), false);
+        return majorService.getApplications(userPrincipal.getId());
     }
 
     @Operation(summary = "전공 등록 신청 승인")

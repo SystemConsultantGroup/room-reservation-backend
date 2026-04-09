@@ -67,4 +67,8 @@ public class User extends BaseTimeEntity {
         this.type = userType;
         this.studentId = studentId;
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

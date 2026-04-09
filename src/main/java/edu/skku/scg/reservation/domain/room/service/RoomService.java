@@ -2,6 +2,7 @@ package edu.skku.scg.reservation.domain.room.service;
 
 import edu.skku.scg.reservation.domain.organization.entity.Major;
 import edu.skku.scg.reservation.domain.organization.repository.MajorRepository;
+import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
 import edu.skku.scg.reservation.domain.reservation.entity.Reservation;
 import edu.skku.scg.reservation.domain.reservation.repository.ReservationRepository;
 import edu.skku.scg.reservation.domain.room.dto.*;
@@ -168,6 +169,25 @@ public class RoomService {
         return WeeklyRoomScheduleResponse.from(roomId, weeklyReservations);
     }
 
+    public Page<ReservationDetail> getFutureReservations(
+            Long roomId,
+            List<Long> managingUnitIds,
+            Pageable pageable) {
+
+        Room room = roomRepository.findByIdWithMajors(roomId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ROOM_NOT_FOUND));
+
+        validateRoomOwnership(room, managingUnitIds);
+
+        Page<Reservation> reservations = reservationRepository.findFutureReservationsByRoomId(
+                roomId,
+                LocalDateTime.now(),
+                pageable
+        );
+
+        return reservations.map(ReservationDetail::from);
+    }
+
     private void validateMajorsOwnership(List<Long> majorIds, List<Long> managingUnitIds) {
         if (majorIds == null || majorIds.isEmpty()) return;
 
@@ -246,5 +266,15 @@ public class RoomService {
         }
 
         return false;
+    }
+
+    public void validateRoomOwnership(Room room, List<Long> managingUnitIds) {
+        boolean hasUnmanagedMajor = room.getMajorRooms().stream()
+                .map(majorRoom -> majorRoom.getMajor().getManagementUnit().getId())
+                .anyMatch(unitId -> !managingUnitIds.contains(unitId));
+
+        if (hasUnmanagedMajor) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
     }
 }
