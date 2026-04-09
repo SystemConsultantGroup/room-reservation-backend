@@ -1,6 +1,7 @@
 package edu.skku.scg.reservation.domain.room.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
+import edu.skku.scg.reservation.domain.reservation.dto.ReservationDetail;
 import edu.skku.scg.reservation.domain.room.dto.*;
 import edu.skku.scg.reservation.domain.room.service.RoomService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
@@ -119,5 +120,16 @@ public class RoomController {
         Long userId = userPrincipal == null ? null : userPrincipal.getId();
 
         return roomService.getRoomSummaries(managementUnitId, userId);
+    }
+
+    @Operation(summary = "특정 공간의 향후 예약 조회")
+    @AdminApi
+    @GetMapping("{roomId}/reservations")
+    public PageResponse<ReservationDetail> getFutureReservations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @ManagementUnitId Long managementUnitId) {
+        // 이 API를 호출하려면 해당 room과 연결된 전공들의 managementUnitId 목록이 모두 userPrincipal.getManagingUnitIds()에 속해있어야 한다.
+        // (roomRepository.findRoomsByManagementUnitIds 참고)
     }
 }

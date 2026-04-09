@@ -1,7 +1,7 @@
 package edu.skku.scg.reservation.domain.user.service;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
-import edu.skku.scg.reservation.domain.user.dto.UserDetail;
+import edu.skku.scg.reservation.domain.user.dto.GetMeResponse;
 import edu.skku.scg.reservation.domain.user.dto.UserInfo;
 import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
 import edu.skku.scg.reservation.domain.user.entity.User;
@@ -23,9 +23,9 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserDetail getUserDetail(UserPrincipal principal) {
+    public GetMeResponse getUserDetail(UserPrincipal principal) {
         User user = userRepository.findByIdWithMajors(principal.getId()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return UserDetail.from(user, principal.getManagingUnitIds());
+        return GetMeResponse.from(user, principal.getManagingUnitIds());
     }
 
     public Page<UserInfo> getUsers(List<Long> managementUnitIds, Pageable pageable, String keyword) {

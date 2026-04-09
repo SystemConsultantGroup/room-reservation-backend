@@ -156,11 +156,11 @@ public class MajorService {
         return users.map(user -> MajorApplicationDetail.from(user, managingUnitIds));
     }
 
-    public MajorApplicationList getApplications(Long userId) {
+    public MajorApplicationList getApplications(Long userId, boolean includeApproved) {
         User user = userRepository.findByIdWithMajors(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return MajorApplicationList.from(user);
+        return MajorApplicationList.from(user, includeApproved);
     }
 
     private UserMajor getUserMajor(Long userMajorId) {
