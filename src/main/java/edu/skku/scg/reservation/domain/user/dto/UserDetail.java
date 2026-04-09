@@ -1,5 +1,8 @@
 package edu.skku.scg.reservation.domain.user.dto;
 
+import edu.skku.scg.reservation.domain.organization.dto.MajorApplication;
+import edu.skku.scg.reservation.domain.organization.dto.MajorInfo;
+import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
 import edu.skku.scg.reservation.domain.user.entity.User;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
 
@@ -11,19 +14,20 @@ public record UserDetail(
         String name,
         String studentId,
         UserType type,
-        List<MajorInfo> majors,
-        List<Long> managingUnitIds
+        List<MajorApplication> applications
 ) {
-    public static UserDetail from(User user, List<Long> managingUnitIds) {
-        UserInfo userInfo = UserInfo.from(user);
+    public static UserDetail from(User user) {
+        List<MajorApplication> applications = user.getUserMajors().stream()
+                .map(MajorApplication::from)
+                .toList();
+
         return new UserDetail(
-                userInfo.id(),
-                userInfo.email(),
-                userInfo.name(),
-                userInfo.studentId(),
-                userInfo.type(),
-                userInfo.majors(),
-                managingUnitIds
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getStudentId(),
+                user.getType(),
+                applications
         );
     }
 }

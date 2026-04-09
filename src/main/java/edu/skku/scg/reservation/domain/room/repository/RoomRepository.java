@@ -31,6 +31,18 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             ")")
     Page<Room> findRoomsByManagementUnitIds(List<Long> managementUnitIds, Pageable pageable);
 
+    @Query("SELECT DISTINCT r.id FROM Room r " +
+            "JOIN r.majorRooms mr " +
+            "JOIN mr.major m " +
+            "WHERE m.managementUnit.id IN :managementUnitIds " +
+            "AND NOT EXISTS (" +
+            "SELECT 1 FROM MajorRoom mr2 " +
+                "JOIN mr2.major m2 " +
+                "WHERE mr2.room = r " +
+                "AND m2.managementUnit.id NOT IN :managementUnitIds" +
+            ")")
+    List<Long> findRoomIdsByManagementUnitIds(List<Long> managementUnitIds);
+
     @Query("SELECT DISTINCT r FROM Room r " +
             "LEFT JOIN FETCH r.majorRooms mr " +
             "LEFT JOIN FETCH mr.major m " +

@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.user.dto;
 
+import edu.skku.scg.reservation.domain.organization.dto.MajorInfo;
 import edu.skku.scg.reservation.domain.user.entity.UserType;
 import edu.skku.scg.reservation.domain.user.entity.RegistrationStatus;
 import edu.skku.scg.reservation.domain.user.entity.User;

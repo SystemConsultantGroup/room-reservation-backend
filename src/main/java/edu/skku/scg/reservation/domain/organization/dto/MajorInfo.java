@@ -1,4 +1,4 @@
-package edu.skku.scg.reservation.domain.user.dto;
+package edu.skku.scg.reservation.domain.organization.dto;
 
 import edu.skku.scg.reservation.domain.user.entity.MajorType;
 import edu.skku.scg.reservation.domain.user.entity.UserMajor;
