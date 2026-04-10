@@ -1,5 +1,6 @@
 package edu.skku.scg.reservation.domain.organization.entity;
 
+import edu.skku.scg.reservation.domain.user.entity.UserType;
 import edu.skku.scg.reservation.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,6 +26,10 @@ public class ManagementUnit extends BaseTimeEntity {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String approvalMethod;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType defaultUserType;
 
     public void updateNotice(String title, String content) {
         this.noticeTitle = title;
