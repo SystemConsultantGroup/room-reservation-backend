@@ -37,7 +37,7 @@ public class Reservation extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer attendeeCount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String purpose;
 
     @Builder
