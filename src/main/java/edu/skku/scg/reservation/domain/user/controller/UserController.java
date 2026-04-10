@@ -10,6 +10,7 @@ import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.dto.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +43,7 @@ public class UserController {
     @PatchMapping("/me")
     public void updateMe(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody UpdateMeRequest dto) {
+            @Valid @RequestBody UpdateMeRequest dto) {
         userService.updateMe(userPrincipal.getId(), dto);
     }
 

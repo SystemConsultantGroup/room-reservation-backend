@@ -2,13 +2,13 @@ package edu.skku.scg.reservation.domain.organization.controller;
 
 import edu.skku.scg.reservation.domain.auth.principal.UserPrincipal;
 import edu.skku.scg.reservation.domain.organization.dto.*;
-import edu.skku.scg.reservation.domain.organization.service.MajorService;
 import edu.skku.scg.reservation.domain.organization.service.ManagementUnitService;
 import edu.skku.scg.reservation.global.annotation.AdminApi;
 import edu.skku.scg.reservation.global.annotation.ManagementUnitId;
 import edu.skku.scg.reservation.global.annotation.PublicApi;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +34,7 @@ public class ManagementUnitController {
     public void updateNotice(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @ManagementUnitId Long managementUnitId,
-            @RequestBody UpdateNoticeRequest dto) {
+            @Valid @RequestBody UpdateNoticeRequest dto) {
 
         managementUnitService.updateNotice(managementUnitId, dto, userPrincipal.getManagingUnitIds());
     }
