@@ -17,6 +17,7 @@ public class ManagementUnit extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(length = 100)
     private String noticeTitle;
 
     @Column(columnDefinition = "TEXT")
