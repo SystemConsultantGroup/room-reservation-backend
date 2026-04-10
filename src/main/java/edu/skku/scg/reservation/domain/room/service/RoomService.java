@@ -248,6 +248,7 @@ public class RoomService {
                             .build();
                 }).toList();
 
+        roomRepository.flush();
         room.getOperatingHours().addAll(operatingHours);
     }
 
