@@ -24,7 +24,7 @@ public class ManagementUnit extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String noticeContent;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String approvalMethod;
 
     @Enumerated(EnumType.STRING)
