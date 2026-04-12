@@ -23,3 +23,6 @@ logging:
     org.springframework: WARN
     org.hibernate.orm.jdbc.bind: OFF
     edu.skku.scg.reservation: INFO
+
+cookie:
+  secure: true
