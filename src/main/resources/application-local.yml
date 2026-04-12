@@ -6,17 +6,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        highlight_sql: true
         use_sql_comments: true
 
 logging:
   level:
-    org.springframework: INFO
-    org.hibernate.orm.jdbc.bind: INFO
-
-swagger:
-  user:
-    id: ${SWAGGER_ID}
-    password: ${SWAGGER_PASSWORD}
+    org.springframework: DEBUG
+    org.hibernate.orm.jdbc.bind: DEBUG
 
 cookie:
-  secure: true
+  secure: false
