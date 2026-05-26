@@ -1,116 +1,95 @@
-# 성균관대학교 공간 예약 백엔드
+# 성균관대학교 공간 예약 서비스 백엔드
 
-![Java](https://img.shields.io/badge/Java-17-blue) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-brightgreen) ![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-005F99)
+![Java](https://img.shields.io/badge/Java-17-blue?logo=openjdk&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.11-brightgreen?logo=springboot&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-005F99?logo=mysql&logoColor=white)
 
-성균관대학교(SKKU) 공간 예약 서비스를 위한 Spring Boot 백엔드입니다.
+성균관대학교 교내 공간 예약을 관리하기 위한 Spring Boot 백엔드 API 서비스입니다.
 
-## 1. 주요 기능
+## 핵심 기능
 
-- Google OAuth2 기반 로그인 및 온보딩
-- JWT(HttpOnly Cookie) 기반 인증/인가
-- 공간(Room) 생성/수정/삭제/조회
-- 예약 생성/조회/취소
-- 전공 등록 신청 및 관리자 승인/거절
-- 관리 단위(Management Unit) 기반 멀티테넌시 데이터 분리
+- Google OAuth2 로그인 및 쿠키 기반 JWT 인증 처리
+- 공간 CRUD
+- 예약 생성, 조회, 취소
+- 전공별 등록 신청 프로세스와 관리자 승인 플로우
+- 관리 단위(`ManagementUnit`) 기반의 테넌트 분리 및 권한 제어
 
-## 2. 기술 스택
+## 시작하기
 
-- Java 17
-- Spring Boot 3.5.11
-- Spring Security, Spring Data JPA
-- MySQL
-- OpenAPI (springdoc)
-- Gradle
-
-## 3. 사전 요구 사항
+### 1. 요구 사항
 
 - Java 17 이상
 - MySQL 8.0 이상
-- Docker (선택)
+- Docker (선택 사항)
 
-## 4. 빠른 시작
+### 2. 환경 변수 설정
 
-### 4.1 환경 변수
+로컬 구동 시 필요한 최소한의 환경 변수입니다.
 
-아래 값은 최소 실행 기준입니다.
+| 변수명                 | 설명                     | 예시                                         |
+| :--------------------- | :----------------------- | :------------------------------------------- |
+| `DB_URL`               | MySQL JDBC 접속 주소     | `jdbc:mysql://localhost:3306/reservation`    |
+| `DB_USERNAME`          | 데이터베이스 계정        | `root`                                       |
+| `DB_PASSWORD`          | 데이터베이스 비밀번호    | `secret`                                     |
+| `JWT_SECRET`           | JWT 서명용 시크릿 키     | `my-secret-key-string`                       |
+| `GOOGLE_CLIENT_ID`     | 구글 OAuth 클라이언트 ID |                                              |
+| `GOOGLE_CLIENT_SECRET` | 구글 OAuth 시크릿 키     |                                              |
+| `GOOGLE_CALLBACK_URI`  | 구글 로그인 콜백 URI     | `http://localhost:8000/auth/callback/google` |
 
-| 변수명                 | 설명                                                           |
-| ---------------------- | -------------------------------------------------------------- |
-| `DB_URL`               | MySQL JDBC URL (예: `jdbc:mysql://localhost:3306/reservation`) |
-| `DB_USERNAME`          | DB 사용자명                                                    |
-| `DB_PASSWORD`          | DB 비밀번호                                                    |
-| `JWT_SECRET`           | JWT 서명 키                                                    |
-| `GOOGLE_CLIENT_ID`     | Google OAuth Client ID                                         |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret                                     |
-| `GOOGLE_CALLBACK_URI`  | OAuth 콜백 URI                                                 |
+> `dev` 프로파일 환경에서는 Swagger Basic Auth 인증을 위해 `SWAGGER_ID`, `SWAGGER_PASSWORD` 변수가 추가로 필요합니다.
 
-`dev` 프로파일에서 Swagger Basic Auth를 사용할 경우 아래 변수도 필요합니다.
-
-| 변수명             | 설명                        |
-| ------------------ | --------------------------- |
-| `SWAGGER_ID`       | Swagger Basic Auth ID       |
-| `SWAGGER_PASSWORD` | Swagger Basic Auth 비밀번호 |
-
-### 4.2 로컬 실행
+### 3. 로컬 서버 실행
 
 ```bash
 ./gradlew clean build
 ./gradlew bootRun --args='--spring.profiles.active=local'
 ```
 
-기본 포트는 `8000`입니다.
+> 서버는 기본적으로 `8000` 포트에서 구동됩니다.
 
-### 4.3 Docker 실행 (선택)
+### 4. Docker 실행 (선택)
 
 ```bash
 docker build -t room-reservation-backend .
 docker run -p 8000:8000 \
   -e DB_URL=jdbc:mysql://host.docker.internal:3306/reservation \
-  -e DB_USERNAME=... \
-  -e DB_PASSWORD=... \
+  -e DB_USERNAME=root \
+  -e DB_PASSWORD=secret \
   -e JWT_SECRET=... \
   -e GOOGLE_CLIENT_ID=... \
   -e GOOGLE_CLIENT_SECRET=... \
   -e GOOGLE_CALLBACK_URI=... \
   room-reservation-backend
+
 ```
 
-## 5. 멀티테넌시 구현 방식
+## 멀티테넌시 아키텍처 및 권한 설계
 
-이 프로젝트는 **Shared DB + Shared Schema** 구조에서 `managementUnit`을 테넌트 경계로 사용합니다.
+본 프로젝트는 **Shared DB + Shared Schema** 방식의 멀티테넌시를 채택하여 `ManagementUnit`을 기준으로 데이터를 분리합니다.
 
-### 5.1 테넌트 식별
+### 1. 테넌트 식별 및 권한
 
-- 공개 조회 API는 요청의 `Origin`을 기준으로 테넌트를 식별합니다.
-- `@ManagementUnitId` 파라미터에 대해 `ManagementUnitIdArgumentResolver`가 `Origin -> managementUnitId`를 주입합니다.
-- 매핑은 `origin_management_units` 테이블을 조회합니다.
+- **식별:** 공개 API는 HTTP 요청의 `Origin` 헤더를 기반으로 테넌트를 식별합니다 (`ManagementUnitIdArgumentResolver` 사용).
+- **관리자 인가:** 로그인 시 부여된 `managingUnitIds`가 JWT Claim으로 저장되며, `@AdminApi`가 적용된 엔드포인트는 이 관리 단위를 보유한 사용자만 접근할 수 있습니다.
+- **데이터 격리:** 관리자 API 호출 시, 타 테넌트 데이터에 접근하려 하면 즉시 `ACCESS_DENIED` 처리됩니다.
 
-### 5.2 권한 컨텍스트
+### 2. 예약 권한 제어 (`RoomAccessPolicy`)
 
-- 로그인 시 `users_management_unit` 기준으로 사용자 관리 권한 테넌트 목록(`managingUnitIds`)을 조회합니다.
-- 해당 목록을 JWT claim에 담아 요청마다 `UserPrincipal`로 복원합니다.
-- `@AdminApi`는 `managingUnitIds`가 있는 사용자만 접근 가능합니다.
+`ReservationService`는 예약을 생성하기 전 사용자의 승인된 전공(`UserMajor`)과 해당 공간에 할당된 전공(`MajorRoom`)'의 교집합을 검증합니다. 게스트(GUEST)는 예약을 생성할 수 없습니다.
 
-### 5.3 데이터 경계 강제
+| 정책 (Policy)          | 조건 및 설명                                                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`ALL`**              | 사용자의 승인된 전공과 공간 전공 중 하나라도 겹치면 예약 허용                                                                                      |
+| **`ONLY_FIRST_MAJOR`** | **학생(STUDENT):** 제1전공(`type=FIRST`)이 공간 전공과 일치해야만 허용<br> **교원(FACULTY):** 제1전공 여부 상관없이 승인 전공 교집합만 있으면 허용 |
+| **`ONLY_FACULTY`**     | 교원(FACULTY)만 예약 허용                                                                                                                          |
 
-- 관리자 조회/수정 API는 `managingUnitIds` 기반 쿼리 필터를 적용합니다.
-- `Room`, `Major`, `User`, `Reservation` 관련 서비스에서 권한이 없는 타 테넌트 데이터 접근 시 `ACCESS_DENIED`를 발생시킵니다.
+## API 문서
 
-## 6. API 문서
+- **Swagger UI:** `http://localhost:8000/swagger-ui/index.html`
+- **OpenAPI JSON:** `http://localhost:8000/v3/api-docs`
 
-- Swagger UI: `/swagger-ui/index.html`
-- OpenAPI JSON: `/v3/api-docs`
+> **환경별 문서 정책:**
+> `local`: 제약 없음 / `dev`: Basic Auth 인증 필요 / `prod`: 비활성화
 
-프로파일별 정책:
-
-- `local`: Swagger 공개
-- `dev`: Swagger Basic Auth 적용 (`SWAGGER_ID`, `SWAGGER_PASSWORD`)
-
-## 7. ERD
-
-![ERD](docs/erd.png)
-
-## 8. 프로젝트 구조
+## 프로젝트 구조
 
 ```text
 src/main/java/edu/skku/scg/reservation
@@ -125,11 +104,9 @@ src/main/java/edu/skku/scg/reservation
     ├── config
     ├── exception
     └── resolver
+
 ```
 
-## 9. 환경 프로파일
+## ERD
 
-- `src/main/resources/application.yml`
-- `src/main/resources/application-local.yml`
-- `src/main/resources/application-dev.yml`
-- `src/main/resources/application-prod.yml`
+![ERD](docs/erd.png)
